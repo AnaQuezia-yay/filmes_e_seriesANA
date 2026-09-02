@@ -56,8 +56,18 @@ def adicionar_filme():
     responses:
       201:
         description: Filme cadastrado com sucesso!
+      400:
+        description: Erro de validação dos dados enviados.
     """
     novo_filme = request.json
+    
+    # --- NOSSA BLINDAGEM DE SEGURANÇA ---
+    if not novo_filme.get('titulo') or not novo_filme.get('diretor'):
+        return jsonify({'erro': 'Título e diretor são obrigatórios!'}), 400
+    if int(novo_filme.get('ano', 0)) < 1888:
+        return jsonify({'erro': 'O ano do filme é inválido!'}), 400
+    # ------------------------------------
+        
     conn = sqlite3.connect('filmes.db')
     c = conn.cursor()
     c.execute('INSERT INTO filmes (titulo, diretor, ano) VALUES (?, ?, ?)', 
