@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Filmes</title>
+    
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <h1 id="tituloForm">Cadastrar Filme</h1>
+    
+    <form id="formFilme">
+        <input type="hidden" id="filmeId">
+        <input type="text" id="titulo" placeholder="Título do Filme" required>
+        <input type="text" id="diretor" placeholder="Diretor" required>
+        <input type="number" id="ano" placeholder="Ano de Lançamento" required>
+        <button type="submit" id="btnSalvar">Salvar Filme</button>
+        <button type="button" id="btnCancelar" class="btn-cancelar" onclick="limparFormulario()">Cancelar Edição</button>
+    </form>
+
+    <h2>Filmes Cadastrados</h2>
+    <div id="listaFilmes"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/filmes';
+
+        async function carregarFilmes() {
+            const resposta = await fetch(API_URL);
+            const filmes = await resposta.json();
+            const divLista = document.getElementById('listaFilmes');
+            divLista.innerHTML = '';
+            
+            filmes.forEach(filme => {
+                divLista.innerHTML += `
+                    <div class="filme-item">
+                        <div>
+                            <strong>${filme.titulo}</strong> (${filme.ano})<br>
+                            <small>Dirigido por: ${filme.diretor}</small>
+                        </div>
+                        <div class="acoes">
+                            <button class="btn-editar" onclick="prepararEdicao(${filme.id}, '${escapeHtml(filme.titulo)}', '${escapeHtml(filme.diretor)}', ${filme.ano})">Editar</button>
+                            <button class="btn-excluir" onclick="excluirFilme(${filme.id})">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('formFilme').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('filmeId').value;
+            const filmeDado = {
+                titulo: document.getElementById('titulo').value,
+                diretor: document.getElementById('diretor').value,
+                ano: parseInt(document.getElementById('ano').value)
+            };
+
+            if (id) {
+                // UPDATE (PUT)
+                await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(filmeDado)
+                });
+            } else {
+                // CREATE (POST)
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(filmeDado)
+                });
+            }
+
+            limparFormulario();
+            carregarFilmes();
+        });
+
+        async function excluirFilme(id) {
+            if (confirm('Tem certeza que deseja excluir este filme?')) {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                carregarFilmes();
+            }
+        }
+
+        function prepararEdicao(id, titulo, diretor, ano) {
+            document.getElementById('filmeId').value = id;
+            document.getElementById('titulo').value = titulo;
+            document.getElementById('diretor').value = diretor;
+            document.getElementById('ano').value = ano;
+            
+            document.getElementById('tituloForm').innerText = 'Editar Filme';
+            document.getElementById('btnSalvar').innerText = 'Atualizar Filme';
+            document.getElementById('btnCancelar').style.display = 'block';
+        }
+
+        function limparFormulario() {
+            document.getElementById('filmeId').value = '';
+            document.getElementById('formFilme').reset();
+            document.getElementById('tituloForm').innerText = 'Cadastrar Filme';
+            document.getElementById('btnSalvar').innerText = 'Salvar Filme';
+            document.getElementById('btnCancelar').style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/'/g, "\\'");
+        }
+
+        carregarFilmes();
+    </script>
+</body>
+</html>
