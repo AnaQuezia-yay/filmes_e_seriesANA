@@ -3,33 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Catálogo de Filmes</title>
-    
-    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 id="tituloForm">Cadastrar Filme</h1>
-    
-    <form id="formFilme">
-        <input type="hidden" id="filmeId">
-        <input type="text" id="titulo" placeholder="Título do Filme" required>
-        <input type="text" id="diretor" placeholder="Diretor" required>
-        <input type="number" id="ano" placeholder="Ano de Lançamento" required>
-        <button type="submit" id="btnSalvar">Salvar Filme</button>
-        <button type="button" id="btnCancelar" class="btn-cancelar" onclick="limparFormulario()">Cancelar Edição</button>
-    </form>
+    <div class="container">
+        <h1 id="tituloForm">Cadastrar Filme</h1>
+        <form id="formFilme">
+            <input type="hidden" id="filmeId">
+            <input type="text" id="titulo" placeholder="Título do Filme (Ex: Carros)" required>
+            <input type="text" id="diretor" placeholder="Diretor (Ex: Disney)" required>
+            <input type="number" id="ano" placeholder="Ano de Lançamento (Ex: 2006)" required>
+            <button type="submit" id="btnSalvar">Salvar Filme</button>
+            <button type="button" id="btnCancelar" class="btn-cancelar" onclick="limparFormulario()">Cancelar</button>
+        </form>
+    </div>
 
-    <h2>Filmes Cadastrados</h2>
-    <div id="listaFilmes"></div>
+    <div class="container">
+        <h2>Filmes Cadastrados</h2>
+        <!-- Barra de Pesquisa -->
+        <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por título..." onkeyup="filtrarFilmes()">
+        <div id="listaFilmes"></div>
+    </div>
 
     <script>
         const API_URL = 'http://localhost:5000/filmes';
+        let todosOsFilmes = []; // Salva os filmes para a pesquisa
 
         async function carregarFilmes() {
-            const resposta = await fetch(API_URL);
-            const filmes = await resposta.json();
+            try {
+                const resposta = await fetch(API_URL);
+                todosOsFilmes = await resposta.json();
+                renderizarLista(todosOsFilmes);
+            } catch (erro) {
+                document.getElementById('listaFilmes').innerHTML = '<p style="color:red;">Ligue o servidor Python!</p>';
+            }
+        }
+
+        function renderizarLista(filmes) {
             const divLista = document.getElementById('listaFilmes');
             divLista.innerHTML = '';
-            
             filmes.forEach(filme => {
                 divLista.innerHTML += `
                     <div class="filme-item">
@@ -46,9 +58,14 @@
             });
         }
 
+        function filtrarFilmes() {
+            const termo = document.getElementById('pesquisa').value.toLowerCase();
+            const filtrados = todosOsFilmes.filter(f => f.titulo.toLowerCase().includes(termo));
+            renderizarLista(filtrados);
+        }
+
         document.getElementById('formFilme').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const id = document.getElementById('filmeId').value;
             const filmeDado = {
                 titulo: document.getElementById('titulo').value,
@@ -57,27 +74,16 @@
             };
 
             if (id) {
-                // UPDATE (PUT)
-                await fetch(`${API_URL}/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(filmeDado)
-                });
+                await fetch(`${API_URL}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filmeDado) });
             } else {
-                // CREATE (POST)
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(filmeDado)
-                });
+                await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filmeDado) });
             }
-
             limparFormulario();
             carregarFilmes();
         });
 
         async function excluirFilme(id) {
-            if (confirm('Tem certeza que deseja excluir este filme?')) {
+            if (confirm('Excluir filme?')) {
                 await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 carregarFilmes();
             }
@@ -88,23 +94,20 @@
             document.getElementById('titulo').value = titulo;
             document.getElementById('diretor').value = diretor;
             document.getElementById('ano').value = ano;
-            
             document.getElementById('tituloForm').innerText = 'Editar Filme';
-            document.getElementById('btnSalvar').innerText = 'Atualizar Filme';
+            document.getElementById('btnSalvar').innerText = 'Atualizar';
             document.getElementById('btnCancelar').style.display = 'block';
         }
 
         function limparFormulario() {
-            document.getElementById('filmeId').value = '';
             document.getElementById('formFilme').reset();
+            document.getElementById('filmeId').value = '';
             document.getElementById('tituloForm').innerText = 'Cadastrar Filme';
             document.getElementById('btnSalvar').innerText = 'Salvar Filme';
             document.getElementById('btnCancelar').style.display = 'none';
         }
 
-        function escapeHtml(str) {
-            return str.replace(/'/g, "\\'");
-        }
+        function escapeHtml(str) { return str.replace(/'/g, "\\'"); }
 
         carregarFilmes();
     </script>

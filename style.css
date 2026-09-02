@@ -2,53 +2,43 @@
 
 body { 
     font-family: 'Poppins', sans-serif; 
-    background-color: #cec4ea; 
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
-    margin: 0;
+    background-color: #d1c8e1; /* O fundo roxo que você colocou */
+    color: #333; display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px; margin: 0;
 }
 
 .container {
-    background-color: #ffffff;
-    width: 100%;
-    max-width: 500px;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(10, 10, 10, 0.1);
-    margin-bottom: 30px;
+    background-color: #ffffff; width: 100%; max-width: 600px;
+    padding: 30px; border-radius: 12px; margin-bottom: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); /* Cria um destaque */
+    box-sizing: border-box;
 }
 
-h1, h2 { text-align: center; color: #464242; margin-top: 0; }
+h1, h2 { text-align: center; color: #4a4063; margin-top: 0; }
 
 input { 
     width: 100%; padding: 12px; margin: 10px 0 20px 0; 
     border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif; outline: none;
 }
+input:focus { border-color: #7251b5; }
+
+#pesquisa { border: 2px solid #7251b5; background-color: #f9f7ff; }
 
 button { 
     width: 100%; padding: 12px; font-weight: 600; font-size: 16px;
     border: none; border-radius: 8px; cursor: pointer;
+    background-color: #7251b5; color: white; margin-bottom: 10px;
     font-family: 'Poppins', sans-serif; transition: 0.2s;
-    background-color: #6c63ff; color: white; margin-bottom: 10px;
 }
-
-button:hover { filter: brightness(0.9); }
-
+button:hover { background-color: #5d4296; }
 .btn-cancelar { background-color: #6c757d; display: none; }
 
-#listaFilmes { width: 100%; max-width: 500px; }
-
 .filme-item { 
-    background: #ffffff; padding: 15px 20px; margin-bottom: 12px; 
-    border-radius: 8px; border-left: 5px solid #6c63ff; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background: #f9f9f9; padding: 15px 20px; margin-bottom: 12px; 
+    border-radius: 8px; border-left: 5px solid #7251b5; 
     display: flex; justify-content: space-between; align-items: center;
 }
-
 .acoes { display: flex; gap: 10px; }
 .acoes button { padding: 8px 12px; font-size: 14px; width: auto; margin: 0; }
 .btn-editar { background-color: #ffc107; color: #333; }
