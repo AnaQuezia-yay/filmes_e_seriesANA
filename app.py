@@ -1,30 +1,32 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import sqlite3
-from flasgger import Swagger # 1. Importando o Swagger
+import psycopg2 # Nossa nova biblioteca de banco em nuvem
+from flasgger import Swagger
+import os
 
 app = Flask(__name__)
 CORS(app)
-swagger = Swagger(app) # 2. Inicializando o Swagger
+swagger = Swagger(app)
+
+# Cole o seu link do Neon dentro das aspas simples do segundo parâmetro!
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_xZtlFK1esac2@ep-little-darkness-a5ocfk4p-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
 
 def init_db():
-    conn = sqlite3.connect('filmes.db')
+    conn = get_connection()
     c = conn.cursor()
+    # No Postgre, AUTOINCREMENT se chama SERIAL
     c.execute('''CREATE TABLE IF NOT EXISTS filmes 
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, diretor TEXT, ano INTEGER)''')
+                 (id SERIAL PRIMARY KEY, titulo TEXT, diretor TEXT, ano INTEGER)''')
     conn.commit()
     conn.close()
 
 @app.route('/filmes', methods=['GET'])
 def listar_filmes():
-    """
-    Lista todos os filmes cadastrados.
-    ---
-    responses:
-      200:
-        description: Retorna uma lista de filmes do banco de dados.
-    """
-    conn = sqlite3.connect('filmes.db')
+    """... (Documentação Swagger omitida para economizar espaço, pode manter a sua) ..."""
+    conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM filmes')
     filmes = [{'id': row[0], 'titulo': row[1], 'diretor': row[2], 'ano': row[3]} for row in c.fetchall()]
@@ -33,44 +35,18 @@ def listar_filmes():
 
 @app.route('/filmes', methods=['POST'])
 def adicionar_filme():
-    """
-    Cadastra um novo filme no catálogo.
-    ---
-    parameters:
-      - in: body
-        name: body
-        required: true
-        description: Dados do filme (título, diretor e ano).
-        schema:
-          type: object
-          properties:
-            titulo:
-              type: string
-              example: Matrix
-            diretor:
-              type: string
-              example: Lana Wachowski
-            ano:
-              type: integer
-              example: 1999
-    responses:
-      201:
-        description: Filme cadastrado com sucesso!
-      400:
-        description: Erro de validação dos dados enviados.
-    """
+    """... (Documentação Swagger) ..."""
     novo_filme = request.json
     
-    # --- NOSSA BLINDAGEM DE SEGURANÇA ---
     if not novo_filme.get('titulo') or not novo_filme.get('diretor'):
         return jsonify({'erro': 'Título e diretor são obrigatórios!'}), 400
     if int(novo_filme.get('ano', 0)) < 1888:
         return jsonify({'erro': 'O ano do filme é inválido!'}), 400
-    # ------------------------------------
         
-    conn = sqlite3.connect('filmes.db')
+    conn = get_connection()
     c = conn.cursor()
-    c.execute('INSERT INTO filmes (titulo, diretor, ano) VALUES (?, ?, ?)', 
+    # O Postgre usa %s em vez de ?
+    c.execute('INSERT INTO filmes (titulo, diretor, ano) VALUES (%s, %s, %s)', 
               (novo_filme['titulo'], novo_filme['diretor'], novo_filme['ano']))
     conn.commit()
     conn.close()
@@ -78,36 +54,11 @@ def adicionar_filme():
 
 @app.route('/filmes/<int:id>', methods=['PUT'])
 def atualizar_filme(id):
-    """
-    Atualiza os dados de um filme existente.
-    ---
-    parameters:
-      - in: path
-        name: id
-        type: integer
-        required: true
-        description: ID numérico do filme a ser atualizado.
-      - in: body
-        name: body
-        required: true
-        description: Novos dados do filme.
-        schema:
-          type: object
-          properties:
-            titulo:
-              type: string
-            diretor:
-              type: string
-            ano:
-              type: integer
-    responses:
-      200:
-        description: Filme atualizado com sucesso!
-    """
+    """... (Documentação Swagger) ..."""
     dados = request.json
-    conn = sqlite3.connect('filmes.db')
+    conn = get_connection()
     c = conn.cursor()
-    c.execute('UPDATE filmes SET titulo = ?, diretor = ?, ano = ? WHERE id = ?', 
+    c.execute('UPDATE filmes SET titulo = %s, diretor = %s, ano = %s WHERE id = %s', 
               (dados['titulo'], dados['diretor'], dados['ano'], id))
     conn.commit()
     conn.close()
@@ -115,26 +66,14 @@ def atualizar_filme(id):
 
 @app.route('/filmes/<int:id>', methods=['DELETE'])
 def excluir_filme(id):
-    """
-    Exclui um filme do catálogo.
-    ---
-    parameters:
-      - in: path
-        name: id
-        type: integer
-        required: true
-        description: ID numérico do filme a ser excluído.
-    responses:
-      200:
-        description: Filme excluído com sucesso!
-    """
-    conn = sqlite3.connect('filmes.db')
+    """... (Documentação Swagger) ..."""
+    conn = get_connection()
     c = conn.cursor()
-    c.execute('DELETE FROM filmes WHERE id = ?', (id,))
+    c.execute('DELETE FROM filmes WHERE id = %s', (id,))
     conn.commit()
     conn.close()
     return jsonify({'mensagem': 'Filme excluído com sucesso!'})
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
