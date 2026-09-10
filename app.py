@@ -23,6 +23,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+init_db()
+
 @app.route('/filmes', methods=['GET'])
 def listar_filmes():
     """... (Documentação Swagger omitida para economizar espaço, pode manter a sua) ..."""
