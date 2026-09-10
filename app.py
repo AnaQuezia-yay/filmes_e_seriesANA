@@ -9,7 +9,7 @@ CORS(app)
 swagger = Swagger(app)
 
 # Cole o seu link do Neon dentro das aspas simples do segundo parâmetro!
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_xZtlFK1esac2@ep-little-darkness-a5ocfk4p-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_MxjDJ95ZnihB@ep-gentle-bonus-axgnde7b-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 
 def get_connection():
     return psycopg2.connect(DATABASE_URL)
