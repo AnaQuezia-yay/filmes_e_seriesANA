@@ -15,7 +15,7 @@ function CartaoFilme(props) {
 
 // -- UM POUCO DE ESTILO RÁPIDO SÓ PARA VERMOS DIFERENTE --
 const estiloCartao = {
-  border: '2px solid #646cff', // O roxo do React
+  border: '2px solid #8209df', // O roxo do React
   borderRadius: '12px',
   padding: '1.5rem',
   margin: '1rem',
