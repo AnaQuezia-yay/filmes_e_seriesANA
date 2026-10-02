@@ -9,6 +9,9 @@ function CartaoFilme(props) {
       <h3 style={estiloTitulo}>{props.titulo}</h3>
       <p style={estiloDetalhe}><strong>Diretor:</strong> {props.diretor}</p>
       <p style={estiloDetalhe}><strong>Ano:</strong> {props.ano}</p>
+      {props.descricao && (
+        <p style={estiloDescricao}><strong>Descrição:</strong> {props.descricao}</p>
+      )}
     </div>
   );
 }
@@ -21,7 +24,8 @@ const estiloCartao = {
   margin: '1rem',
   backgroundColor: '#f9f9f9',
   boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-  maxWidth: '300px'
+  maxWidth: '300px',
+  textAlign: 'left'
 }
 
 const estiloTitulo = {
@@ -34,6 +38,14 @@ const estiloTitulo = {
 const estiloDetalhe = {
   margin: '0.2rem 0',
   color: '#555',
+}
+
+const estiloDescricao = {
+  margin: '0.5rem 0 0 0',
+  color: '#666',
+  fontSize: '0.9rem',
+  lineHeight: '1.4',
+  wordBreak: 'break-word'
 }
 // -----------------------------------------------------
 

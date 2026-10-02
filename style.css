@@ -16,12 +16,17 @@ body {
 
 h1, h2 { text-align: center; color: #4a4063; margin-top: 0; }
 
-input { 
+input, textarea { 
     width: 100%; padding: 12px; margin: 10px 0 20px 0; 
     border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
     font-family: 'Poppins', sans-serif; outline: none;
+    font-size: 14px;
 }
-input:focus { border-color: #7251b5; }
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+input:focus, textarea:focus { border-color: #7251b5; }
 
 #pesquisa { border: 2px solid #7251b5; background-color: #f9f7ff; }
 
@@ -37,9 +42,20 @@ button:hover { background-color: #5d4296; }
 .filme-item { 
     background: #f9f9f9; padding: 15px 20px; margin-bottom: 12px; 
     border-radius: 8px; border-left: 5px solid #7251b5; 
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 15px;
 }
-.acoes { display: flex; gap: 10px; }
+.filme-info {
+    flex: 1;
+}
+.filme-descricao {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+    word-break: break-word;
+}
+.acoes { display: flex; gap: 10px; flex-shrink: 0; }
 .acoes button { padding: 8px 12px; font-size: 14px; width: auto; margin: 0; }
 .btn-editar { background-color: #ffc107; color: #333; }
 .btn-excluir { background-color: #ff4d4d; color: white; }

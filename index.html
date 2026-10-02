@@ -13,6 +13,7 @@
             <input type="text" id="titulo" placeholder="Título do Filme (Ex: Carros)" required>
             <input type="text" id="diretor" placeholder="Diretor (Ex: John Lasseter)" required>
             <input type="number" id="ano" placeholder="Ano de Lançamento (Ex: 2006)" required>
+            <textarea id="descricao" placeholder="Descrição do Filme (Ex: Um carro de corrida veloz aprende sobre humildade e amizade...)" rows="3"></textarea>
             <button type="submit" id="btnSalvar">Salvar</button>
             <button type="button" id="btnCancelar" class="btn-cancelar" onclick="limparFormulario()">Cancelar</button>
         </form>
@@ -21,17 +22,29 @@
     <div class="container">
         <h2>Filmes Cadastrados</h2>
         <!-- Barra de Pesquisa -->
-        <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por título..." onkeyup="filtrarFilmes()">
+        <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por título ou descrição..." onkeyup="filtrarFilmes()">
         <div id="listaFilmes"></div>
     </div>
 
     <script>
-        const API_URL = 'https://filmes-e-seriesana.onrender.com/filmes';
+        let API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+            ? 'http://127.0.0.1:5000/filmes'
+            : 'https://filmes-e-seriesana.onrender.com/filmes';
         let todosOsFilmes = []; // Salva os filmes para a pesquisa
 
         async function carregarFilmes() {
             try {
-                const resposta = await fetch(API_URL);
+                let resposta;
+                try {
+                    resposta = await fetch(API_URL);
+                    if (!resposta.ok) throw new Error('Falha ao obter filmes');
+                } catch (primeiroErro) {
+                    const fallbackUrl = API_URL.includes('127.0.0.1') || API_URL.includes('localhost')
+                        ? 'https://filmes-e-seriesana.onrender.com/filmes'
+                        : 'http://127.0.0.1:5000/filmes';
+                    resposta = await fetch(fallbackUrl);
+                    if (resposta.ok) API_URL = fallbackUrl;
+                }
                 todosOsFilmes = await resposta.json();
                 renderizarLista(todosOsFilmes);
             } catch (erro) {
@@ -42,15 +55,23 @@
         function renderizarLista(filmes) {
             const divLista = document.getElementById('listaFilmes');
             divLista.innerHTML = '';
+            if (!filmes || filmes.length === 0) {
+                divLista.innerHTML = '<p style="text-align: center; color: #888;">Nenhum filme encontrado.</p>';
+                return;
+            }
             filmes.forEach(filme => {
+                const descHtml = filme.descricao 
+                    ? `<p class="filme-descricao"><strong>Descrição:</strong> ${escapeHtml(filme.descricao)}</p>` 
+                    : '';
                 divLista.innerHTML += `
                     <div class="filme-item">
-                        <div>
-                            <strong>${filme.titulo}</strong> (${filme.ano})<br>
-                            <small>Dirigido por: ${filme.diretor}</small>
+                        <div class="filme-info">
+                            <strong>${escapeHtml(filme.titulo || '')}</strong> (${filme.ano})<br>
+                            <small>Dirigido por: ${escapeHtml(filme.diretor || '')}</small>
+                            ${descHtml}
                         </div>
                         <div class="acoes">
-                            <button class="btn-editar" onclick="prepararEdicao(${filme.id}, '${escapeHtml(filme.titulo)}', '${escapeHtml(filme.diretor)}', ${filme.ano})">Editar</button>
+                            <button class="btn-editar" onclick="prepararEdicao(${filme.id})">Editar</button>
                             <button class="btn-excluir" onclick="excluirFilme(${filme.id})">Excluir</button>
                         </div>
                     </div>
@@ -59,8 +80,13 @@
         }
 
         function filtrarFilmes() {
-            const termo = document.getElementById('pesquisa').value.toLowerCase();
-            const filtrados = todosOsFilmes.filter(f => f.titulo.toLowerCase().includes(termo));
+            const termo = document.getElementById('pesquisa').value.toLowerCase().trim();
+            const filtrados = todosOsFilmes.filter(f => {
+                const titulo = (f.titulo || '').toLowerCase();
+                const descricao = (f.descricao || '').toLowerCase();
+                const diretor = (f.diretor || '').toLowerCase();
+                return titulo.includes(termo) || descricao.includes(termo) || diretor.includes(termo);
+            });
             renderizarLista(filtrados);
         }
 
@@ -70,7 +96,8 @@
             const filmeDado = {
                 titulo: document.getElementById('titulo').value,
                 diretor: document.getElementById('diretor').value,
-                ano: parseInt(document.getElementById('ano').value)
+                ano: parseInt(document.getElementById('ano').value),
+                descricao: document.getElementById('descricao').value.trim()
             };
 
             if (id) {
@@ -89,25 +116,38 @@
             }
         }
 
-        function prepararEdicao(id, titulo, diretor, ano) {
-            document.getElementById('filmeId').value = id;
-            document.getElementById('titulo').value = titulo;
-            document.getElementById('diretor').value = diretor;
-            document.getElementById('ano').value = ano;
+        function prepararEdicao(id) {
+            const filme = todosOsFilmes.find(f => f.id === id);
+            if (!filme) return;
+            document.getElementById('filmeId').value = filme.id;
+            document.getElementById('titulo').value = filme.titulo || '';
+            document.getElementById('diretor').value = filme.diretor || '';
+            document.getElementById('ano').value = filme.ano || '';
+            document.getElementById('descricao').value = filme.descricao || '';
             document.getElementById('tituloForm').innerText = 'Editar Filme';
             document.getElementById('btnSalvar').innerText = 'Atualizar';
             document.getElementById('btnCancelar').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function limparFormulario() {
             document.getElementById('formFilme').reset();
             document.getElementById('filmeId').value = '';
-            document.getElementById('tituloForm').innerText = 'Cadastrar Filme';
-            document.getElementById('btnSalvar').innerText = 'Salvar Filme';
+            document.getElementById('descricao').value = '';
+            document.getElementById('tituloForm').innerText = 'Cadastrar Filme ou Serie';
+            document.getElementById('btnSalvar').innerText = 'Salvar';
             document.getElementById('btnCancelar').style.display = 'none';
         }
 
-        function escapeHtml(str) { return str.replace(/'/g, "\\'"); }
+        function escapeHtml(str) { 
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
         carregarFilmes();
     </script>
