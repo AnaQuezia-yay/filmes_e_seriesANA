@@ -25,7 +25,7 @@ function CartaoFilme({ id, titulo, diretor, ano, descricao, onEdit, onDelete }) 
 
   return (
     <article className="cr-card" style={estilos.card}>
-      {/* Pôster estilo Crunchyroll */}
+      {/* Pôster estilo SeoYoonFlix */}
       <div style={estilos.poster}>
         <div style={{ ...estilos.posterBg, background: tema.bg }} />
         <div style={estilos.posterOverlay} />

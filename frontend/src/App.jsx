@@ -112,7 +112,7 @@ function App() {
 
   const handleExcluir = async (id, titulo) => {
     const nome = titulo ? `"${titulo}"` : 'este título'
-    if (window.confirm(`Deseja remover ${nome} do catálogo Crunchyroll?`)) {
+    if (window.confirm(`Deseja remover ${nome} do catálogo SeoYoonFlix?`)) {
       try {
         const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
         if (!res.ok) throw new Error("Erro ao excluir")
@@ -151,7 +151,7 @@ function App() {
               <circle cx="18" cy="18" r="16" fill="#FF640A" />
               <path d="M18 6C11.373 6 6 11.373 6 18C6 24.627 11.373 30 18 30C24.627 30 30 24.627 30 18C30 11.373 24.627 6 18 6ZM18 26.5C13.306 26.5 9.5 22.694 9.5 18C9.5 13.306 13.306 9.5 18 9.5C20.086 9.5 22.001 10.252 23.491 11.511C20.406 12.221 17.925 14.685 17.195 17.765C17.07 18.291 17 18.839 17 19.4C17 21.042 17.658 22.529 18.73 23.633C17.915 24.183 16.924 24.5 15.86 24.5C13.728 24.5 12 22.772 12 20.64C12 18.508 13.728 16.78 15.86 16.78C16.486 16.78 17.074 16.928 17.595 17.191C18.423 13.684 21.391 11 25 11C26.565 11 28 11.522 29.155 12.404C28.136 20.355 21.306 26.5 18 26.5Z" fill="#FFFFFF" />
             </svg>
-            <div className="cr-brand-name">Crunchy<span>roll</span></div>
+            <div className="cr-brand-name">SeoYoon<span>Flix</span></div>
           </div>
           <ul className="cr-nav-links">
             <li><a href="#catalogo" className="active">Explorar</a></li>
@@ -168,7 +168,7 @@ function App() {
             </svg>
             Novo Título
           </button>
-          <div className="cr-user-badge" title="Usuário Premium">CR</div>
+          <div className="cr-user-badge" title="Usuário Premium">SY</div>
         </div>
       </header>
 
@@ -386,7 +386,7 @@ function App() {
                   <circle cx="18" cy="18" r="16" fill="#FF640A" />
                   <path d="M18 6C11.373 6 6 11.373 6 18C6 24.627 11.373 30 18 30C24.627 30 30 24.627 30 18C30 11.373 24.627 6 18 6ZM18 26.5C13.306 26.5 9.5 22.694 9.5 18C9.5 13.306 13.306 9.5 18 9.5C20.086 9.5 22.001 10.252 23.491 11.511C20.406 12.221 17.925 14.685 17.195 17.765C17.07 18.291 17 18.839 17 19.4C17 21.042 17.658 22.529 18.73 23.633C17.915 24.183 16.924 24.5 15.86 24.5C13.728 24.5 12 22.772 12 20.64C12 18.508 13.728 16.78 15.86 16.78C16.486 16.78 17.074 16.928 17.595 17.191C18.423 13.684 21.391 11 25 11C26.565 11 28 11.522 29.155 12.404C28.136 20.355 21.306 26.5 18 26.5Z" fill="#FFFFFF" />
                 </svg>
-                <div className="cr-brand-name">Crunchy<span>roll</span></div>
+                <div className="cr-brand-name">SeoYoon<span>Flix</span></div>
               </div>
               <p>Sua plataforma premium para catalogar filmes, séries e animes com alto desempenho e sincronização em tempo real na nuvem.</p>
             </div>
@@ -418,7 +418,7 @@ function App() {
           </div>
 
           <div className="cr-footer-bottom">
-            <div>© 2026 Crunchyroll, LLC • Inspirado no design oficial da Crunchyroll</div>
+            <div>© 2026 SeoYoonFlix • Todos os direitos reservados</div>
             <div className="cr-footer-badges">
               <span>Português (Brasil)</span>
               <span>Privacidade</span>

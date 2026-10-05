@@ -57,7 +57,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar estilizada Crunchyroll */
+/* Scrollbar estilizada SeoYoonFlix */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -73,7 +73,7 @@ body {
 }
 
 /* =========================================
-   Navbar (Crunchyroll Header)
+   Navbar (SeoYoonFlix Header)
    ========================================= */
 .cr-navbar {
     position: sticky;
@@ -221,7 +221,7 @@ body {
 }
 
 /* =========================================
-   Hero Section (Crunchyroll Featured Showcase)
+   Hero Section (SeoYoonFlix Featured Showcase)
    ========================================= */
 .cr-hero {
     position: relative;
@@ -405,7 +405,7 @@ body {
     flex: 1;
 }
 
-/* Section Header com barra laranja Crunchyroll */
+/* Section Header com barra laranja SeoYoonFlix */
 .cr-section-header {
     display: flex;
     align-items: center;
@@ -542,7 +542,7 @@ body {
 }
 
 /* =========================================
-   Movie Grid & Crunchyroll Cards
+   Movie Grid & SeoYoonFlix Cards
    ========================================= */
 .cr-movies-grid {
     display: grid;
@@ -550,7 +550,7 @@ body {
     gap: 24px;
 }
 
-/* O Cartão Estilo Anime / Crunchyroll */
+/* O Cartão Estilo Anime / SeoYoonFlix */
 .cr-card {
     background-color: var(--cr-bg-card);
     border-radius: var(--radius-md);
@@ -828,7 +828,7 @@ body {
 }
 
 /* =========================================
-   Crunchyroll Modal (Cadastrar / Editar Filme)
+   SeoYoonFlix Modal (Cadastrar / Editar Filme)
    ========================================= */
 .cr-modal-overlay {
     position: fixed;
@@ -1058,7 +1058,7 @@ textarea.cr-form-control {
 }
 
 /* =========================================
-   Footer (Crunchyroll Style)
+   Footer (SeoYoonFlix Style)
    ========================================= */
 .cr-footer {
     background-color: var(--cr-bg-black);
