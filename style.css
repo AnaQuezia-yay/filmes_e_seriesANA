@@ -1,61 +1,1188 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap');
 
-body { 
-    font-family: 'Poppins', sans-serif; 
-    background-color: #d1c8e1; /* O fundo roxo que você colocou */
-    color: #333; display: flex; flex-direction: column; align-items: center;
-    padding: 40px 20px; margin: 0;
+:root {
+    --cr-orange: #ff640a;
+    --cr-orange-hover: #ff7e2e;
+    --cr-orange-active: #e05500;
+    --cr-orange-glow: rgba(255, 100, 10, 0.35);
+    --cr-orange-soft: rgba(255, 100, 10, 0.12);
+    
+    --cr-bg-black: #000000;
+    --cr-bg-dark: #0a0b0d;
+    --cr-bg-card: #141519;
+    --cr-bg-card-hover: #1c1e24;
+    --cr-bg-elevated: #23252b;
+    --cr-bg-input: #17181c;
+    
+    --cr-border: #23252b;
+    --cr-border-light: #32353e;
+    --cr-border-focus: #ff640a;
+    
+    --cr-text-primary: #ffffff;
+    --cr-text-secondary: #a0a0a0;
+    --cr-text-muted: #6f7178;
+    --cr-gold: #fab818;
+    --cr-danger: #ff334b;
+    
+    --font-heading: 'Rubik', 'Poppins', sans-serif;
+    --font-body: 'Poppins', 'Rubik', sans-serif;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.container {
-    background-color: #ffffff; width: 100%; max-width: 600px;
-    padding: 30px; border-radius: 12px; margin-bottom: 30px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15); /* Cria um destaque */
+/* =========================================
+   Reset & Base Styles
+   ========================================= */
+* {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-h1, h2 { text-align: center; color: #4a4063; margin-top: 0; }
-
-input, textarea { 
-    width: 100%; padding: 12px; margin: 10px 0 20px 0; 
-    border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
-    font-family: 'Poppins', sans-serif; outline: none;
-    font-size: 14px;
+html {
+    scroll-behavior: smooth;
 }
-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-input:focus, textarea:focus { border-color: #7251b5; }
 
-#pesquisa { border: 2px solid #7251b5; background-color: #f9f7ff; }
-
-button { 
-    width: 100%; padding: 12px; font-weight: 600; font-size: 16px;
-    border: none; border-radius: 8px; cursor: pointer;
-    background-color: #7251b5; color: white; margin-bottom: 10px;
-    font-family: 'Poppins', sans-serif; transition: 0.2s;
+body {
+    font-family: var(--font-body);
+    background-color: var(--cr-bg-dark);
+    color: var(--cr-text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
 }
-button:hover { background-color: #5d4296; }
-.btn-cancelar { background-color: #6c757d; display: none; }
 
-.filme-item { 
-    background: #f9f9f9; padding: 15px 20px; margin-bottom: 12px; 
-    border-radius: 8px; border-left: 5px solid #7251b5; 
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: 15px;
+/* Scrollbar estilizada Crunchyroll */
+::-webkit-scrollbar {
+    width: 8px;
 }
-.filme-info {
+::-webkit-scrollbar-track {
+    background: var(--cr-bg-black);
+}
+::-webkit-scrollbar-thumb {
+    background: #32353e;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cr-orange);
+}
+
+/* =========================================
+   Navbar (Crunchyroll Header)
+   ========================================= */
+.cr-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: rgba(10, 11, 13, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--cr-border);
+    padding: 0 2rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cr-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.cr-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--cr-text-primary);
+    cursor: pointer;
+}
+
+.cr-logo-svg {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(0 0 8px var(--cr-orange-glow));
+    transition: var(--transition);
+}
+
+.cr-brand:hover .cr-logo-svg {
+    transform: rotate(15deg) scale(1.05);
+}
+
+.cr-brand-name {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.cr-brand-name span {
+    color: var(--cr-orange);
+}
+
+.cr-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    list-style: none;
+}
+
+.cr-nav-links a {
+    color: var(--cr-text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    padding: 6px 0;
+    position: relative;
+}
+
+.cr-nav-links a:hover,
+.cr-nav-links a.active {
+    color: var(--cr-text-primary);
+}
+
+.cr-nav-links a.active::after,
+.cr-nav-links a:hover::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--cr-orange);
+    border-radius: 2px;
+}
+
+.cr-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.btn-add-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--cr-orange);
+    color: #ffffff;
+    border: none;
+    padding: 9px 18px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    letter-spacing: 0.5px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.btn-add-nav:hover {
+    background-color: var(--cr-orange-hover);
+    box-shadow: 0 4px 16px var(--cr-orange-glow);
+    transform: translateY(-1px);
+}
+
+.btn-add-nav:active {
+    background-color: var(--cr-orange-active);
+    transform: translateY(0);
+}
+
+.cr-user-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cr-orange), #b32d00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+    cursor: pointer;
+    border: 2px solid #23252b;
+    transition: var(--transition);
+}
+
+.cr-user-badge:hover {
+    border-color: var(--cr-orange);
+    transform: scale(1.05);
+}
+
+/* =========================================
+   Hero Section (Crunchyroll Featured Showcase)
+   ========================================= */
+.cr-hero {
+    position: relative;
+    min-height: 480px;
+    background: radial-gradient(circle at 75% 30%, rgba(255, 100, 10, 0.18), transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(108, 92, 231, 0.12), transparent 45%),
+                linear-gradient(180deg, #111317 0%, var(--cr-bg-dark) 100%);
+    display: flex;
+    align-items: center;
+    padding: 3rem 4rem;
+    border-bottom: 1px solid var(--cr-border);
+    overflow: hidden;
+}
+
+.cr-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 85% 50%, rgba(255, 100, 10, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.cr-hero-backdrop-pattern {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.15;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cr-hero-content {
+    max-width: 680px;
+    position: relative;
+    z-index: 2;
+    animation: fadeInHero 0.8s ease-out forwards;
+}
+
+@keyframes fadeInHero {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cr-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--cr-orange);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 2px 10px var(--cr-orange-glow);
+}
+
+.cr-hero-title {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.cr-hero-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.2rem;
+    font-size: 0.88rem;
+    color: var(--cr-text-secondary);
+}
+
+.cr-hero-meta .tag-rating {
+    color: var(--cr-gold);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cr-hero-meta .tag-quality {
+    background: var(--cr-bg-elevated);
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--cr-border-light);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cr-hero-desc {
+    font-size: 1.05rem;
+    color: #c4c4c8;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.cr-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--cr-orange);
+    color: white;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 14px 28px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.btn-hero-primary:hover {
+    background-color: var(--cr-orange-hover);
+    box-shadow: 0 6px 22px var(--cr-orange-glow);
+    transform: translateY(-2px);
+}
+
+.btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 13px 24px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-hero-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   Main Catalog Container
+   ========================================= */
+.cr-main-container {
+    max-width: 1380px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem 2rem;
     flex: 1;
 }
-.filme-descricao {
-    margin: 8px 0 0 0;
-    font-size: 13px;
-    color: #666;
-    line-height: 1.4;
-    word-break: break-word;
+
+/* Section Header com barra laranja Crunchyroll */
+.cr-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.8rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
-.acoes { display: flex; gap: 10px; flex-shrink: 0; }
-.acoes button { padding: 8px 12px; font-size: 14px; width: auto; margin: 0; }
-.btn-editar { background-color: #ffc107; color: #333; }
-.btn-excluir { background-color: #ff4d4d; color: white; }
+
+.cr-section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cr-orange-bar {
+    width: 5px;
+    height: 28px;
+    background-color: var(--cr-orange);
+    border-radius: 2px;
+}
+
+.cr-section-title {
+    font-family: var(--font-heading);
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.cr-counter-badge {
+    font-size: 0.85rem;
+    color: var(--cr-text-secondary);
+    background: var(--cr-bg-card);
+    border: 1px solid var(--cr-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* =========================================
+   Search & Filter Bar
+   ========================================= */
+.cr-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    background: var(--cr-bg-card);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--cr-border);
+}
+
+.cr-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+}
+
+.cr-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cr-text-muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.cr-search-input {
+    width: 100%;
+    background-color: var(--cr-bg-input);
+    border: 1px solid var(--cr-border);
+    color: #ffffff;
+    padding: 12px 14px 12px 42px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.cr-search-input:focus {
+    border-color: var(--cr-orange);
+    background-color: #1c1d22;
+    box-shadow: 0 0 0 3px var(--cr-orange-soft);
+}
+
+.cr-search-input:focus + .cr-search-icon {
+    color: var(--cr-orange);
+}
+
+.cr-search-input::placeholder {
+    color: var(--cr-text-muted);
+}
+
+.cr-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cr-filter-btn {
+    background: transparent;
+    border: 1px solid var(--cr-border);
+    color: var(--cr-text-secondary);
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.cr-filter-btn:hover {
+    color: #ffffff;
+    border-color: var(--cr-border-light);
+    background-color: var(--cr-bg-elevated);
+}
+
+.cr-filter-btn.active {
+    background-color: var(--cr-orange);
+    color: #ffffff;
+    border-color: var(--cr-orange);
+    box-shadow: 0 2px 10px var(--cr-orange-glow);
+}
+
+/* =========================================
+   Movie Grid & Crunchyroll Cards
+   ========================================= */
+.cr-movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+/* O Cartão Estilo Anime / Crunchyroll */
+.cr-card {
+    background-color: var(--cr-bg-card);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--cr-border);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    position: relative;
+}
+
+.cr-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--cr-orange);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--cr-orange-glow);
+}
+
+/* Pôster / Imagem Superior */
+.cr-poster {
+    width: 100%;
+    height: 190px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.cr-poster-bg {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.4s ease;
+}
+
+.cr-card:hover .cr-poster-bg {
+    transform: scale(1.08);
+}
+
+.cr-poster-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(20,21,25,0.9) 100%);
+}
+
+/* Badges sobre o poster */
+.cr-poster-badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 3;
+}
+
+.cr-badge-dub {
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+}
+
+.cr-badge-year {
+    background-color: var(--cr-orange);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+/* Botão de Play que surge no hover */
+.cr-poster-play {
+    position: absolute;
+    z-index: 4;
+    width: 52px;
+    height: 52px;
+    background-color: rgba(255, 100, 10, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: var(--transition);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+
+.cr-poster-play svg {
+    margin-left: 3px;
+}
+
+.cr-card:hover .cr-poster-play {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.cr-poster-category {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    z-index: 3;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--cr-orange);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Corpo do Cartão */
+.cr-card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.cr-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+    transition: var(--transition);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cr-card:hover .cr-card-title {
+    color: var(--cr-orange);
+}
+
+.cr-card-director {
+    font-size: 0.82rem;
+    color: var(--cr-text-secondary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cr-card-director svg {
+    color: var(--cr-orange);
+}
+
+.cr-card-desc {
+    font-size: 0.85rem;
+    color: #8c8f99;
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* Ações do Cartão */
+.cr-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--cr-border);
+    margin-top: auto;
+}
+
+.btn-card-edit {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: var(--cr-bg-elevated);
+    border: 1px solid var(--cr-border-light);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.btn-card-edit:hover {
+    background-color: var(--cr-orange-soft);
+    border-color: var(--cr-orange);
+    color: var(--cr-orange);
+}
+
+.btn-card-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cr-bg-elevated);
+    border: 1px solid var(--cr-border-light);
+    color: var(--cr-text-muted);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-card-delete:hover {
+    background-color: rgba(255, 51, 75, 0.15);
+    border-color: var(--cr-danger);
+    color: var(--cr-danger);
+}
+
+/* =========================================
+   Empty & Loading States
+   ========================================= */
+.cr-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--cr-bg-card);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--cr-border-light);
+}
+
+.cr-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: var(--cr-text-muted);
+}
+
+.cr-empty-title {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.cr-empty-desc {
+    color: var(--cr-text-secondary);
+    font-size: 0.95rem;
+    max-width: 440px;
+    margin: 0 auto 1.5rem auto;
+}
+
+/* Loading Spinner */
+.cr-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid var(--cr-border);
+    border-top-color: var(--cr-orange);
+    border-radius: 50%;
+    animation: crSpin 0.8s linear infinite;
+    margin: 3rem auto 1rem auto;
+}
+
+@keyframes crSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* =========================================
+   Crunchyroll Modal (Cadastrar / Editar Filme)
+   ========================================= */
+.cr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+
+.cr-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cr-modal {
+    background-color: var(--cr-bg-card);
+    border: 1px solid var(--cr-border-light);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 540px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px var(--cr-orange-glow);
+    transform: scale(0.92) translateY(20px);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.cr-modal-overlay.active .cr-modal {
+    transform: scale(1) translateY(0);
+}
+
+.cr-modal-header {
+    background-color: #0f1013;
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--cr-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cr-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cr-modal-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cr-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--cr-text-secondary);
+    font-size: 1.6rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.cr-modal-close:hover {
+    color: #ffffff;
+    background-color: var(--cr-bg-elevated);
+}
+
+.cr-modal-body {
+    padding: 1.75rem;
+}
+
+.cr-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.cr-form-group label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #c4c4c8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.cr-form-control {
+    width: 100%;
+    background-color: var(--cr-bg-input);
+    border: 1px solid var(--cr-border);
+    color: #ffffff;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.cr-form-control:focus {
+    border-color: var(--cr-orange);
+    background-color: #1a1c22;
+    box-shadow: 0 0 0 3px var(--cr-orange-soft);
+}
+
+.cr-form-control::placeholder {
+    color: var(--cr-text-muted);
+}
+
+textarea.cr-form-control {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.cr-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cr-border);
+    margin-top: 1.5rem;
+}
+
+.btn-modal-cancel {
+    background-color: var(--cr-bg-elevated);
+    border: 1px solid var(--cr-border-light);
+    color: var(--cr-text-secondary);
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.btn-modal-cancel:hover {
+    background-color: #2c2f37;
+    color: #ffffff;
+}
+
+.btn-modal-submit {
+    background-color: var(--cr-orange);
+    border: none;
+    color: #ffffff;
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-modal-submit:hover {
+    background-color: var(--cr-orange-hover);
+    box-shadow: 0 4px 16px var(--cr-orange-glow);
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   Toast Notification System
+   ========================================= */
+.cr-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.cr-toast {
+    background-color: var(--cr-bg-card);
+    border: 1px solid var(--cr-border-light);
+    border-left: 4px solid var(--cr-orange);
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-width: 280px;
+    max-width: 380px;
+    animation: toastSlideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    pointer-events: auto;
+}
+
+.cr-toast.toast-error {
+    border-left-color: var(--cr-danger);
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* =========================================
+   Footer (Crunchyroll Style)
+   ========================================= */
+.cr-footer {
+    background-color: var(--cr-bg-black);
+    border-top: 1px solid var(--cr-border);
+    padding: 3.5rem 2rem 2rem 2rem;
+    margin-top: auto;
+}
+
+.cr-footer-inner {
+    max-width: 1380px;
+    margin: 0 auto;
+}
+
+.cr-footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.cr-footer-brand p {
+    color: var(--cr-text-secondary);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    max-width: 320px;
+    line-height: 1.6;
+}
+
+.cr-footer-col h4 {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffffff;
+    margin-bottom: 1.25rem;
+}
+
+.cr-footer-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cr-footer-col ul a {
+    color: var(--cr-text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: var(--transition);
+}
+
+.cr-footer-col ul a:hover {
+    color: var(--cr-orange);
+    padding-left: 4px;
+}
+
+.cr-footer-bottom {
+    padding-top: 2rem;
+    border-top: 1px solid #1a1c22;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.82rem;
+    color: var(--cr-text-muted);
+}
+
+.cr-footer-badges {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cr-footer-badges span {
+    color: var(--cr-text-secondary);
+}
+
+/* =========================================
+   Responsividade (Mobile & Tablet)
+   ========================================= */
+@media (max-width: 968px) {
+    .cr-navbar {
+        padding: 0 1.25rem;
+    }
+    .cr-nav-links {
+        display: none; /* Em telas menores, simplifica */
+    }
+    .cr-hero {
+        padding: 2.5rem 1.5rem;
+        min-height: auto;
+    }
+    .cr-hero-title {
+        font-size: 2.2rem;
+    }
+    .cr-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .cr-hero-title {
+        font-size: 1.8rem;
+    }
+    .cr-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cr-controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cr-search-box {
+        min-width: 100%;
+    }
+    .cr-movies-grid {
+        grid-template-columns: 1fr;
+    }
+    .cr-footer-grid {
+        grid-template-columns: 1fr;
+    }
+    .cr-modal {
+        margin: 10px;
+    }
+}
