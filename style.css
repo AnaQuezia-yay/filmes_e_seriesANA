@@ -99,21 +99,24 @@ body {
 .cr-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-decoration: none;
     color: var(--cr-text-primary);
     cursor: pointer;
 }
 
+.cr-logo-img,
 .cr-logo-svg {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
     filter: drop-shadow(0 0 8px var(--cr-orange-glow));
     transition: var(--transition);
 }
 
+.cr-brand:hover .cr-logo-img,
 .cr-brand:hover .cr-logo-svg {
-    transform: rotate(15deg) scale(1.05);
+    transform: rotate(10deg) scale(1.08);
 }
 
 .cr-brand-name {

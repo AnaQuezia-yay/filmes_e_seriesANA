@@ -185,6 +185,10 @@ def index():
 def style():
     return send_from_directory('.', 'style.css')
 
+@app.route('/logotipo_sem_fundo.png', methods=['GET'])
+def logotipo():
+    return send_from_directory('.', 'logotipo_sem_fundo.png')
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0')
