@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import psycopg2 # Nossa nova biblioteca de banco em nuvem
+import psycopg2 
 from flasgger import Swagger
 import os
 
@@ -8,7 +8,6 @@ app = Flask(__name__)
 CORS(app)
 swagger = Swagger(app)
 
-# Cole o seu link do Neon dentro das aspas simples do segundo parâmetro!
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_MxjDJ95ZnihB@ep-gentle-bonus-axgnde7b-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 
 def get_connection():
@@ -17,11 +16,12 @@ def get_connection():
 def init_db():
     conn = get_connection()
     c = conn.cursor()
-    # No Postgre, AUTOINCREMENT se chama SERIAL
+    # Adicionamos link_trailer na criação inicial
     c.execute('''CREATE TABLE IF NOT EXISTS filmes 
-                 (id SERIAL PRIMARY KEY, titulo TEXT, diretor TEXT, ano INTEGER, descricao TEXT)''')
-    # Garante a criação da coluna caso a tabela já exista
+                 (id SERIAL PRIMARY KEY, titulo TEXT, diretor TEXT, ano INTEGER, descricao TEXT, link_trailer TEXT)''')
+    # Garante a criação das colunas caso a tabela já exista de antes
     c.execute('ALTER TABLE filmes ADD COLUMN IF NOT EXISTS descricao TEXT')
+    c.execute('ALTER TABLE filmes ADD COLUMN IF NOT EXISTS link_trailer TEXT') # NOVA COLUNA DO TRAILER
     conn.commit()
     conn.close()
 
@@ -47,12 +47,14 @@ def listar_filmes():
     c = conn.cursor()
     if termo:
         termo_formatado = f'%{termo}%'
-        c.execute('''SELECT id, titulo, diretor, ano, descricao FROM filmes 
+        # Adicionado link_trailer no SELECT
+        c.execute('''SELECT id, titulo, diretor, ano, descricao, link_trailer FROM filmes 
                      WHERE titulo ILIKE %s OR diretor ILIKE %s OR descricao ILIKE %s
                      ORDER BY id''',
                   (termo_formatado, termo_formatado, termo_formatado))
     else:
-        c.execute('SELECT id, titulo, diretor, ano, descricao FROM filmes ORDER BY id')
+        # Adicionado link_trailer no SELECT
+        c.execute('SELECT id, titulo, diretor, ano, descricao, link_trailer FROM filmes ORDER BY id')
     
     filmes = [
         {
@@ -60,7 +62,8 @@ def listar_filmes():
             'titulo': row[1],
             'diretor': row[2],
             'ano': row[3],
-            'descricao': row[4] or ''
+            'descricao': row[4] or '',
+            'link_trailer': row[5] or '' # Mapeia o trailer para enviar ao React
         }
         for row in c.fetchall()
     ]
@@ -71,32 +74,6 @@ def listar_filmes():
 def adicionar_filme():
     """
     Cadastra um novo filme no catálogo.
-    ---
-    parameters:
-      - in: body
-        name: body
-        required: true
-        description: Dados do filme (título, diretor, ano e descrição).
-        schema:
-          type: object
-          properties:
-            titulo:
-              type: string
-              example: Matrix
-            diretor:
-              type: string
-              example: Lana Wachowski
-            ano:
-              type: integer
-              example: 1999
-            descricao:
-              type: string
-              example: Um programador descobre a verdadeira realidade do mundo.
-    responses:
-      201:
-        description: Filme cadastrado com sucesso!
-      400:
-        description: Erro de validação dos dados enviados.
     """
     novo_filme = request.json
     
@@ -106,11 +83,13 @@ def adicionar_filme():
         return jsonify({'erro': 'O ano do filme é inválido!'}), 400
         
     descricao = novo_filme.get('descricao', '')
+    link_trailer = novo_filme.get('link_trailer', '') # Pega o trailer do formulário
+    
     conn = get_connection()
     c = conn.cursor()
-    # O Postgre usa %s em vez de ?
-    c.execute('INSERT INTO filmes (titulo, diretor, ano, descricao) VALUES (%s, %s, %s, %s)', 
-              (novo_filme['titulo'], novo_filme['diretor'], novo_filme['ano'], descricao))
+    # Adicionado link_trailer no INSERT
+    c.execute('INSERT INTO filmes (titulo, diretor, ano, descricao, link_trailer) VALUES (%s, %s, %s, %s, %s)', 
+              (novo_filme['titulo'], novo_filme['diretor'], novo_filme['ano'], descricao, link_trailer))
     conn.commit()
     conn.close()
     return jsonify({'mensagem': 'Filme cadastrado com sucesso!'}), 201
@@ -119,38 +98,16 @@ def adicionar_filme():
 def atualizar_filme(id):
     """
     Atualiza os dados de um filme existente.
-    ---
-    parameters:
-      - in: path
-        name: id
-        type: integer
-        required: true
-        description: ID numérico do filme a ser atualizado.
-      - in: body
-        name: body
-        required: true
-        description: Novos dados do filme.
-        schema:
-          type: object
-          properties:
-            titulo:
-              type: string
-            diretor:
-              type: string
-            ano:
-              type: integer
-            descricao:
-              type: string
-    responses:
-      200:
-        description: Filme atualizado com sucesso!
     """
     dados = request.json
     descricao = dados.get('descricao', '')
+    link_trailer = dados.get('link_trailer', '') # Pega o trailer atualizado
+    
     conn = get_connection()
     c = conn.cursor()
-    c.execute('UPDATE filmes SET titulo = %s, diretor = %s, ano = %s, descricao = %s WHERE id = %s', 
-              (dados['titulo'], dados['diretor'], dados['ano'], descricao, id))
+    # Adicionado link_trailer no UPDATE
+    c.execute('UPDATE filmes SET titulo = %s, diretor = %s, ano = %s, descricao = %s, link_trailer = %s WHERE id = %s', 
+              (dados['titulo'], dados['diretor'], dados['ano'], descricao, link_trailer, id))
     conn.commit()
     conn.close()
     return jsonify({'mensagem': 'Filme atualizado com sucesso!'})
@@ -159,16 +116,6 @@ def atualizar_filme(id):
 def excluir_filme(id):
     """
     Exclui um filme do catálogo.
-    ---
-    parameters:
-      - in: path
-        name: id
-        type: integer
-        required: true
-        description: ID numérico do filme a ser excluído.
-    responses:
-      200:
-        description: Filme excluído com sucesso!
     """
     conn = get_connection()
     c = conn.cursor()
