@@ -168,6 +168,15 @@
                     </div>
 
                     <div class="cr-form-group">
+    <label for="link_trailer">Link do Trailer (YouTube)</label>
+    <input 
+        type="url" 
+        id="link_trailer" 
+        class="cr-form-control" 
+        placeholder="Ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    >
+</div>
+                    <div class="cr-form-group">
                         <label for="descricao">Sinopse / Descrição</label>
                         <textarea 
                             id="descricao" 
@@ -332,6 +341,11 @@
                 const tema = obterTemaPoster(filme.id, filme.titulo);
                 const descTexto = filme.descricao ? escapeHtml(filme.descricao) : 'Sem sinopse cadastrada.';
 
+                // 🌟 MÁGICA DO TRAILER AQUI:
+                const acaoPlay = filme.link_trailer 
+                    ? `onclick="window.open('${escapeHtml(filme.link_trailer)}', '_blank')"` 
+                    : `onclick="exibirToast('Nenhum trailer cadastrado para este título.', true)"`;
+
                 const cardHtml = `
                     <article class="cr-card" id="card-${filme.id}">
                         <!-- Pôster do Cartão -->
@@ -345,8 +359,8 @@
                                 <span class="cr-badge-year">${filme.ano || '—'}</span>
                             </div>
 
-                            <!-- Botão de Play no Hover -->
-                            <div class="cr-poster-play" title="Assistir ${escapeHtml(filme.titulo || '')}">
+                            <!-- Botão de Play no Hover (AGORA COM O TRAILER!) -->
+                            <div class="cr-poster-play" title="Assistir Trailer" ${acaoPlay}>
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                                     <polygon points="6 4 20 12 6 20 6 4"></polygon>
                                 </svg>
@@ -473,7 +487,8 @@
                 titulo: document.getElementById('titulo').value.trim(),
                 diretor: document.getElementById('diretor').value.trim(),
                 ano: parseInt(document.getElementById('ano').value),
-                descricao: document.getElementById('descricao').value.trim()
+                descricao: document.getElementById('descricao').value.trim(),
+                link_trailer: document.getElementById('link_trailer').value.trim()
             };
 
             btnSalvar.disabled = true;
@@ -538,6 +553,7 @@
             document.getElementById('diretor').value = filme.diretor || '';
             document.getElementById('ano').value = filme.ano || '';
             document.getElementById('descricao').value = filme.descricao || '';
+            document.getElementById('link_trailer').value = filme.link_trailer || '';
             
             document.getElementById('tituloForm').innerText = 'Editar Título';
             document.getElementById('btnSalvar').innerText = 'Atualizar Título';
@@ -551,6 +567,7 @@
             document.getElementById('formFilme').reset();
             document.getElementById('filmeId').value = '';
             document.getElementById('descricao').value = '';
+            document.getElementById('link_trailer').value = '';
         }
 
         // Sistema de Notificações Toast
