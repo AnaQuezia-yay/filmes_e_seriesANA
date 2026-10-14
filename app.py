@@ -3,13 +3,48 @@ from flask_cors import CORS
 import psycopg2 
 from flasgger import Swagger
 import os
+import requests
 
 app = Flask(__name__)
 CORS(app)
 swagger = Swagger(app)
 
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_MxjDJ95ZnihB@ep-gentle-bonus-axgnde7b-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+TMDB_API_KEY = '7316bff7a87ceb19bc03059e79ce0f6d'
 
+def buscar_trailer_tmdb(titulo):
+    """Busca o trailer oficial do filme no TMDB."""
+    try:
+        # 1. Busca o ID do filme pelo título
+        url_busca = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={titulo}&language=pt-BR"
+        resposta_busca = requests.get(url_busca).json()
+        
+        if not resposta_busca.get('results'):
+            return ""
+            
+        filme_id = resposta_busca['results'][0]['id']
+        
+        # 2. Busca os vídeos desse filme específico
+        url_videos = f"https://api.themoviedb.org/3/movie/{filme_id}/videos?api_key={TMDB_API_KEY}&language=pt-BR"
+        resposta_videos = requests.get(url_videos).json()
+        
+        # 3. Procura um vídeo que seja do YouTube e do tipo "Trailer"
+        for video in resposta_videos.get('results', []):
+            if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+                return f"https://www.youtube.com/watch?v={video['key']}"
+                
+        # Se não achar trailer em português, tenta em inglês
+        url_videos_en = f"https://api.themoviedb.org/3/movie/{filme_id}/videos?api_key={TMDB_API_KEY}"
+        resposta_videos_en = requests.get(url_videos_en).json()
+        for video in resposta_videos_en.get('results', []):
+            if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+                return f"https://www.youtube.com/watch?v={video['key']}"
+                
+        return ""
+    
+    except Exception as e:
+        print(f"Erro ao buscar trailer: {e}")
+        return ""
 def get_connection():
     return psycopg2.connect(DATABASE_URL)
 
@@ -83,7 +118,11 @@ def adicionar_filme():
         return jsonify({'erro': 'O ano do filme é inválido!'}), 400
         
     descricao = novo_filme.get('descricao', '')
-    link_trailer = novo_filme.get('link_trailer', '') # Pega o trailer do formulário
+    link_trailer = novo_filme.get('link_trailer', '').strip()
+    
+    # Se o usuário não preencheu o trailer, o Python busca sozinho!
+    if not link_trailer:
+        link_trailer = buscar_trailer_tmdb(novo_filme['titulo'])
     
     conn = get_connection()
     c = conn.cursor()
