@@ -1,7 +1,7 @@
 import React from 'react'
 
 const temasPoster = [
-  { bg: 'linear-gradient(135deg, #ff640a 0%, #a32200 60%, #150500 100%)', cat: 'AÇÃO & AVENTURA', icon: '🔥' },
+  { bg: 'linear-gradient(135deg, #8A00C4 0%, #4d006e 60%, #150020 100%)', cat: 'AÇÃO & AVENTURA', icon: '🔥' },
   { bg: 'linear-gradient(135deg, #6c5ce7 0%, #2b1055 60%, #0d051a 100%)', cat: 'FICÇÃO CIENTÍFICA', icon: '⚡' },
   { bg: 'linear-gradient(135deg, #00b894 0%, #004d40 60%, #001a14 100%)', cat: 'FANTASIA', icon: '🌌' },
   { bg: 'linear-gradient(135deg, #e84393 0%, #631238 60%, #1a030c 100%)', cat: 'DRAMA', icon: '🌸' },
@@ -48,11 +48,11 @@ function CartaoFilme({ id, titulo, diretor, ano, descricao, onEdit, onDelete }) 
 
       {/* Corpo do Cartão */}
       <div style={estilos.cardBody}>
-        <h3 style={estilos.cardTitle} title={titulo}>
+        <h3 className="cr-card-title" style={estilos.cardTitle} title={titulo}>
           {titulo || 'Sem Título'}
         </h3>
 
-        <div style={estilos.cardDirector}>
+        <div className="cr-card-director" style={estilos.cardDirector}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -69,6 +69,7 @@ function CartaoFilme({ id, titulo, diretor, ano, descricao, onEdit, onDelete }) 
         <div style={estilos.cardActions}>
           <button 
             type="button" 
+            className="btn-card-edit"
             style={estilos.btnEdit}
             onClick={() => onEdit && onEdit({ id, titulo, diretor, ano, descricao })}
           >
@@ -81,6 +82,7 @@ function CartaoFilme({ id, titulo, diretor, ano, descricao, onEdit, onDelete }) 
 
           <button 
             type="button" 
+            className="btn-card-delete"
             style={estilos.btnDelete}
             onClick={() => onDelete && onDelete(id, titulo)}
             title="Excluir do catálogo"
@@ -148,7 +150,7 @@ const estilos = {
     textTransform: 'uppercase'
   },
   badgeYear: {
-    backgroundColor: '#ff640a',
+    backgroundColor: '#8A00C4',
     color: '#ffffff',
     fontFamily: 'Rubik, sans-serif',
     fontSize: '0.72rem',
@@ -161,7 +163,7 @@ const estilos = {
     zIndex: 4,
     width: '50px',
     height: '50px',
-    backgroundColor: 'rgba(255, 100, 10, 0.95)',
+    backgroundColor: 'rgba(138, 0, 196, 0.95)',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
@@ -177,7 +179,7 @@ const estilos = {
     fontFamily: 'Rubik, sans-serif',
     fontSize: '0.75rem',
     fontWeight: 800,
-    color: '#ff640a',
+    color: '#8A00C4',
     textTransform: 'uppercase',
     letterSpacing: '1px'
   },
