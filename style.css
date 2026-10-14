@@ -1196,3 +1196,81 @@ textarea.cr-form-control {
         margin: 10px;
     }
 }
+
+/* =========================================
+   Botão de Alternar Tema (Navbar)
+   ========================================= */
+.btn-theme-toggle {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 4px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-theme-toggle:hover {
+    transform: scale(1.15) rotate(15deg);
+}
+
+/* =========================================
+   Modo Claro (Light Theme)
+   ========================================= */
+body[data-theme="light"] {
+    /* Fundos Claros */
+    --cr-bg-black: #e4e5f1;       /* Rodapé e Scrollbar */
+    --cr-bg-dark: #f0f2f5;        /* Fundo principal do site */
+    --cr-bg-card: #ffffff;        /* Fundo dos cartões e modais */
+    --cr-bg-card-hover: #f8f9fa;
+    --cr-bg-elevated: #e4e6eb;    /* Fundo de botões secundários */
+    --cr-bg-input: #ffffff;       /* Fundo das caixas de texto */
+
+    /* Bordas Suaves */
+    --cr-border: #dcdde1;
+    --cr-border-light: #c8d6e5;
+
+    /* Textos Escuros */
+    --cr-text-primary: #2f3542;
+    --cr-text-secondary: #57606f;
+    --cr-text-muted: #747d8c;
+}
+
+/* Correções para cores que estavam "chumbadas" (hardcoded) no teu CSS original */
+body[data-theme="light"] .cr-navbar {
+    background-color: rgba(240, 242, 245, 0.95);
+}
+
+body[data-theme="light"] .cr-hero-title,
+body[data-theme="light"] .cr-brand-name {
+    color: var(--cr-text-primary);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+body[data-theme="light"] .cr-hero {
+    background: radial-gradient(circle at 75% 30%, rgba(138, 0, 196, 0.12), transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(108, 92, 231, 0.08), transparent 45%),
+                linear-gradient(180deg, #e4e5f1 0%, var(--cr-bg-dark) 100%);
+}
+
+body[data-theme="light"] .cr-modal-header {
+    background-color: #f8f9fa;
+}
+
+body[data-theme="light"] .btn-hero-secondary {
+    color: var(--cr-text-primary);
+    border-color: var(--cr-border-light);
+}
+
+body[data-theme="light"] .btn-hero-secondary:hover {
+    background-color: var(--cr-bg-elevated);
+    border-color: var(--cr-border);
+}
+
+body[data-theme="light"] .cr-badge-dub {
+    background-color: rgba(255, 255, 255, 0.85);
+    color: var(--cr-text-primary);
+    border-color: rgba(0, 0, 0, 0.1);
+}

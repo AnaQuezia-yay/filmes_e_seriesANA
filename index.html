@@ -26,6 +26,15 @@
         </div>
 
         <div class="cr-nav-right">
+    <!-- Novo Botão de Tema -->
+    <button id="btnTema" class="btn-theme-toggle" onclick="alternarTema()" title="Alternar Tema">
+        ☀️
+    </button>
+    
+    <button class="btn-add-nav" onclick="abrirModalCadastro()">
+
+    <!-- ... resto do teu código ... -->
+        <div class="cr-nav-right">
             <button class="btn-add-nav" onclick="abrirModalCadastro()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -602,6 +611,31 @@
 
         // Inicia o carregamento ao abrir a página
         carregarFilmes();
+
+        // --- SISTEMA DE TEMA (DARK/LIGHT) ---
+const btnTema = document.getElementById('btnTema');
+const temaAtual = localStorage.getItem('tema') || 'dark'; // O escuro é o padrão
+
+// Aplica o tema guardado logo ao abrir a página
+if (temaAtual === 'light') {
+    document.body.setAttribute('data-theme', 'light');
+    btnTema.innerText = '🌙';
+}
+
+function alternarTema() {
+    const body = document.body;
+    const temaNovo = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    
+    if (temaNovo === 'light') {
+        body.setAttribute('data-theme', 'light');
+        btnTema.innerText = '🌙'; // Mostra a lua para voltar ao escuro
+        localStorage.setItem('tema', 'light');
+    } else {
+        body.removeAttribute('data-theme');
+        btnTema.innerText = '☀️'; // Mostra o sol para voltar ao claro
+        localStorage.setItem('tema', 'dark');
+    }
+}
     </script>
 </body>
 </html>
