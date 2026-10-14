@@ -13,33 +13,39 @@ DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_Mxj
 TMDB_API_KEY = '7316bff7a87ceb19bc03059e79ce0f6d'
 
 def buscar_trailer_tmdb(titulo):
-    """Busca o trailer oficial do filme no TMDB."""
+    """Busca o trailer oficial do filme no TMDB com segurança de URL."""
     try:
-        # 1. Busca o ID do filme pelo título
-        url_busca = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={titulo}&language=pt-BR"
-        resposta_busca = requests.get(url_busca).json()
+        # 1. Busca o ID do filme (agora usando 'params' para lidar com espaços no título)
+        url_busca = "https://api.themoviedb.org/3/search/movie"
+        params_busca = {"api_key": TMDB_API_KEY, "query": titulo, "language": "pt-BR"}
+        resposta_busca = requests.get(url_busca, params=params_busca).json()
         
         if not resposta_busca.get('results'):
+            print(f"TMDB: Nenhum filme encontrado com o título '{titulo}'")
             return ""
             
         filme_id = resposta_busca['results'][0]['id']
         
-        # 2. Busca os vídeos desse filme específico
-        url_videos = f"https://api.themoviedb.org/3/movie/{filme_id}/videos?api_key={TMDB_API_KEY}&language=pt-BR"
-        resposta_videos = requests.get(url_videos).json()
+        # 2. Busca os vídeos em Português
+        url_videos = f"https://api.themoviedb.org/3/movie/{filme_id}/videos"
+        params_videos = {"api_key": TMDB_API_KEY, "language": "pt-BR"}
+        resposta_videos = requests.get(url_videos, params=params_videos).json()
         
-        # 3. Procura um vídeo que seja do YouTube e do tipo "Trailer"
         for video in resposta_videos.get('results', []):
             if video['site'] == 'YouTube' and video['type'] == 'Trailer':
                 return f"https://www.youtube.com/watch?v={video['key']}"
                 
-        # Se não achar trailer em português, tenta em inglês
-        url_videos_en = f"https://api.themoviedb.org/3/movie/{filme_id}/videos?api_key={TMDB_API_KEY}"
-        resposta_videos_en = requests.get(url_videos_en).json()
+        # 3. Fallback: Busca os vídeos em Inglês se não houver em PT
+        params_videos_en = {"api_key": TMDB_API_KEY}
+        resposta_videos_en = requests.get(url_videos, params=params_videos_en).json()
         for video in resposta_videos_en.get('results', []):
             if video['site'] == 'YouTube' and video['type'] == 'Trailer':
                 return f"https://www.youtube.com/watch?v={video['key']}"
                 
+        print(f"TMDB: Filme '{titulo}' encontrado, mas sem trailers no YouTube.")
+        return ""
+    except Exception as e:
+        print(f"ERRO CRÍTICO NO TMDB: {e}")
         return ""
     
     except Exception as e:
