@@ -57,7 +57,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar estilizada SeoYoonFlix */
+/* Scrollbar estilizada TsukiGlow */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -73,7 +73,7 @@ body {
 }
 
 /* =========================================
-   Navbar (SeoYoonFlix Header)
+   Navbar (TsukiGlow Header)
    ========================================= */
 .cr-navbar {
     position: sticky;
@@ -224,7 +224,7 @@ body {
 }
 
 /* =========================================
-   Hero Section (SeoYoonFlix Featured Showcase)
+   Hero Section (TsukiGlow Featured Showcase)
    ========================================= */
 .cr-hero {
     position: relative;
@@ -408,7 +408,7 @@ body {
     flex: 1;
 }
 
-/* Section Header com barra laranja SeoYoonFlix */
+/* Section Header com barra laranja TsukiGlow */
 .cr-section-header {
     display: flex;
     align-items: center;
@@ -545,7 +545,7 @@ body {
 }
 
 /* =========================================
-   Movie Grid & SeoYoonFlix Cards
+   Movie Grid & TsukiGlow Cards
    ========================================= */
 .cr-movies-grid {
     display: grid;
@@ -553,7 +553,7 @@ body {
     gap: 24px;
 }
 
-/* O Cartão Estilo Anime / SeoYoonFlix */
+/* O Cartão Estilo Anime / TsukiGlow */
 .cr-card {
     background-color: var(--cr-bg-card);
     border-radius: var(--radius-md);
@@ -831,7 +831,7 @@ body {
 }
 
 /* =========================================
-   SeoYoonFlix Modal (Cadastrar / Editar Filme)
+   TsukiGlow Modal (Cadastrar / Editar Filme)
    ========================================= */
 .cr-modal-overlay {
     position: fixed;
@@ -1061,7 +1061,7 @@ textarea.cr-form-control {
 }
 
 /* =========================================
-   Footer (SeoYoonFlix Style)
+   Footer (TsukiGlow Style)
    ========================================= */
 .cr-footer {
     background-color: var(--cr-bg-black);

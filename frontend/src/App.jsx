@@ -113,7 +113,7 @@ function App() {
 
   const handleExcluir = async (id, titulo) => {
     const nome = titulo ? `"${titulo}"` : 'este título'
-    if (window.confirm(`Deseja remover ${nome} do catálogo SeoYoonFlix?`)) {
+    if (window.confirm(`Deseja remover ${nome} do catálogo TsukiGlow?`)) {
       try {
         const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
         if (!res.ok) throw new Error("Erro ao excluir")
@@ -148,8 +148,8 @@ function App() {
       <header className="cr-navbar">
         <div className="cr-nav-left">
           <div className="cr-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={logoImg} alt="SeoYoonFlix" className="cr-logo-img" />
-            <div className="cr-brand-name">SeoYoon<span>Flix</span></div>
+            <img src={logoImg} alt="TsukiGlow" className="cr-logo-img" />
+            <div className="cr-brand-name">Tsuki<span>Glow</span></div>
           </div>
           <ul className="cr-nav-links">
             <li><a href="#catalogo" className="active">Explorar</a></li>
@@ -380,8 +380,8 @@ function App() {
           <div className="cr-footer-grid">
             <div className="cr-footer-brand">
               <div className="cr-brand">
-                <img src={logoImg} alt="SeoYoonFlix" className="cr-logo-img" />
-                <div className="cr-brand-name">SeoYoon<span>Flix</span></div>
+                <img src={logoImg} alt="TsukiGlow" className="cr-logo-img" />
+                <div className="cr-brand-name">Tsuki<span>Glow</span></div>
               </div>
               <p>Sua plataforma premium para catalogar filmes, séries e animes com alto desempenho e sincronização em tempo real na nuvem.</p>
             </div>
@@ -413,7 +413,7 @@ function App() {
           </div>
 
           <div className="cr-footer-bottom">
-            <div>© 2026 SeoYoonFlix • Todos os direitos reservados</div>
+            <div>© 2026 TsukiGlow • Todos os direitos reservados</div>
             <div className="cr-footer-badges">
               <span>Português (Brasil)</span>
               <span>Privacidade</span>
