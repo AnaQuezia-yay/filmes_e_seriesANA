@@ -1323,3 +1323,18 @@ body[data-theme="light"] .btn-modal-cancel:hover {
 body[data-theme="light"] .cr-toast {
     color: var(--cr-text-primary);
 }
+
+/* =========================================
+   Ajustes de Contraste no Modo Claro
+   ========================================= */
+
+/* Escurece o texto descritivo do banner para facilitar a leitura */
+body[data-theme="light"] .cr-hero-desc {
+    color: #4a4b52; 
+    font-weight: 500;
+}
+
+/* Força o título "CATÁLOGO DE TÍTULOS" a ficar escuro */
+body[data-theme="light"] .cr-section-title {
+    color: var(--cr-text-primary) !important;
+}
