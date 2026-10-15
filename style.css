@@ -1318,3 +1318,8 @@ body[data-theme="light"] .btn-modal-cancel:hover {
     background-color: #c8d6e5;
     color: var(--cr-text-primary);
 }
+
+/* Corrige a cor do texto das notificações Toast no Modo Claro */
+body[data-theme="light"] .cr-toast {
+    color: var(--cr-text-primary);
+}
