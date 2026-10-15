@@ -1284,3 +1284,37 @@ body[data-theme="light"] .cr-card-title {
 body[data-theme="light"] .btn-card-edit {
     color: var(--cr-text-primary);
 }
+
+/* =========================================
+   Correções do Formulário/Modal no Modo Claro
+   ========================================= */
+
+/* Cor do título principal do modal ("EDITAR TÍTULO") */
+body[data-theme="light"] .cr-modal-title {
+    color: var(--cr-text-primary);
+}
+
+/* Cor das etiquetas em cima das caixas de texto ("TÍTULO DA OBRA", etc.) */
+body[data-theme="light"] .cr-form-group label {
+    color: var(--cr-text-primary);
+    font-weight: 800;
+}
+
+/* Cor do texto dentro das caixas onde o utilizador escreve */
+body[data-theme="light"] .cr-form-control {
+    color: var(--cr-text-primary);
+    background-color: #ffffff;
+}
+
+/* Fundo e cor do texto quando o utilizador clica na caixa para escrever */
+body[data-theme="light"] .cr-form-control:focus {
+    background-color: #f5f6fa; /* Mantém um fundo claro em vez de ficar preto */
+    color: var(--cr-text-primary);
+    border-color: var(--cr-orange);
+}
+
+/* Correção da cor do botão "CANCELAR" ao passar o rato */
+body[data-theme="light"] .btn-modal-cancel:hover {
+    background-color: #c8d6e5;
+    color: var(--cr-text-primary);
+}
