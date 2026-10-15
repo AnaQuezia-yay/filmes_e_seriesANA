@@ -139,6 +139,7 @@
             <form id="formFilme" onsubmit="salvarFilme(event)">
                 <div class="cr-modal-body">
                     <input type="hidden" id="filmeId">
+                    <input type="hidden" id="url_capa"> <!-- NOVA LINHA AQUI -->
 
                     <div class="cr-form-group">
                         <label for="titulo">Título da Obra</label>
@@ -355,11 +356,16 @@
                     ? `onclick="window.open('${escapeHtml(filme.link_trailer)}', '_blank')"` 
                     : `onclick="exibirToast('Nenhum trailer cadastrado para este título.', true)"`;
 
+                // 🌟 MÁGICA DA CAPA AQUI:
+                const estiloFundo = filme.url_capa 
+                    ? `background: url('${filme.url_capa}') center/cover no-repeat;` 
+                    : `background: ${tema.bg};`;
+
                 const cardHtml = `
                     <article class="cr-card" id="card-${filme.id}">
                         <!-- Pôster do Cartão -->
                         <div class="cr-poster">
-                            <div class="cr-poster-bg" style="background: ${tema.bg};"></div>
+                            <div class="cr-poster-bg" style="${estiloFundo}"></div>
                             <div class="cr-poster-overlay"></div>
                             
                             <!-- Badges -->
@@ -497,7 +503,8 @@
                 diretor: document.getElementById('diretor').value.trim(),
                 ano: parseInt(document.getElementById('ano').value),
                 descricao: document.getElementById('descricao').value.trim(),
-                link_trailer: document.getElementById('link_trailer').value.trim()
+                link_trailer: document.getElementById('link_trailer').value.trim(),
+                url_capa: document.getElementById('url_capa').value.trim() // <-- Adicione esta linha
             };
 
             btnSalvar.disabled = true;
@@ -570,6 +577,8 @@
             const modal = document.getElementById('modalFilme');
             modal.classList.add('active');
             document.getElementById('titulo').focus();
+
+            document.getElementById('url_capa').value = filme.url_capa || '';
         }
 
         function limparFormulario() {
@@ -577,6 +586,7 @@
             document.getElementById('filmeId').value = '';
             document.getElementById('descricao').value = '';
             document.getElementById('link_trailer').value = '';
+            document.getElementById('url_capa').value = '';
         }
 
         // Sistema de Notificações Toast
