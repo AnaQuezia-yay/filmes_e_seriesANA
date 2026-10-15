@@ -1275,7 +1275,12 @@ body[data-theme="light"] .cr-badge-dub {
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-body[data-theme="light"] .cr-section-title,
-body[data-theme="light"] .cr-hero-desc {
+/* Corrige a cor do título do filme no cartão */
+body[data-theme="light"] .cr-card-title {
+    color: var(--cr-text-primary);
+}
+
+/* Corrige a cor do texto do botão EDITAR */
+body[data-theme="light"] .btn-card-edit {
     color: var(--cr-text-primary);
 }
