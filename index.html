@@ -340,12 +340,19 @@
             btn.disabled = true;
             
             try {
-                const urlBase = API_URL.replace('/filmes', ''); 
-                const resposta = await fetch(`${urlBase}/login`, {
+                // Link absoluto: Força o pedido a ir DIRETO para o Render
+                const urlDeLogin = 'https://filmes-e-seriesana.onrender.com/login';
+                
+                const resposta = await fetch(urlDeLogin, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({username: user, password: pass})
                 });
+                
+                // Se o Render não encontrar a rota (Erro 404), damos um aviso claro
+                if(resposta.status === 404) {
+                    throw new Error('A rota do Render ainda não atualizou!');
+                }
                 
                 const dados = await resposta.json();
                 if(!resposta.ok) throw new Error(dados.erro || 'Falha no login');
