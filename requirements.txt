@@ -4,3 +4,4 @@ flasgger
 gunicorn
 psycopg2-binary
 requests
+PyJWT
