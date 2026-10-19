@@ -286,7 +286,7 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-        // URL da API com fallback robusto
+       // URL da API com fallback robusto
         let API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
             ? 'http://127.0.0.1:5000/filmes'
             : 'https://filmes-e-seriesana.onrender.com/filmes';
@@ -294,389 +294,7 @@
         let todosOsFilmes = [];
         let filtroAtual = 'todos';
 
-        // Estilos e paletas temáticas dinâmicas para as capas dos cartões
-        const temasPoster = [
-            { bg: 'linear-gradient(135deg, #8A00C4 0%, #4d006e 60%, #150020 100%)', cat: 'AÇÃO & AVENTURA', icon: '🔥' },
-            { bg: 'linear-gradient(135deg, #6c5ce7 0%, #2b1055 60%, #0d051a 100%)', cat: 'FICÇÃO CIENTÍFICA', icon: '⚡' },
-            { bg: 'linear-gradient(135deg, #00b894 0%, #004d40 60%, #001a14 100%)', cat: 'FANTASIA', icon: '🌌' },
-            { bg: 'linear-gradient(135deg, #e84393 0%, #631238 60%, #1a030c 100%)', cat: 'DRAMA', icon: '🌸' },
-            { bg: 'linear-gradient(135deg, #0984e3 0%, #0b3966 60%, #021221 100%)', cat: 'SHONEN', icon: '⚔️' },
-            { bg: 'linear-gradient(135deg, #f39c12 0%, #7d4800 60%, #1f1100 100%)', cat: 'CLÁSSICO', icon: '⭐' },
-            { bg: 'linear-gradient(135deg, #e17055 0%, #631f10 60%, #1b0703 100%)', cat: 'SUSPENSE', icon: '🌑' }
-        ];
-
-        function obterTemaPoster(id, titulo) {
-            let hash = 0;
-            const str = (titulo || '') + id;
-            for (let i = 0; i < str.length; i++) {
-                hash = (hash << 5) - hash + str.charCodeAt(i);
-                hash |= 0;
-            }
-            return temasPoster[Math.abs(hash) % temasPoster.length];
-        }
-
-        // Carrega filmes do backend
-        async function carregarFilmes() {
-            const divLista = document.getElementById('listaFilmes');
-            divLista.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
-                    <div class="cr-spinner"></div>
-                    <p style="color: var(--cr-text-secondary); margin-top: 10px;">Carregando produções...</p>
-                </div>
-            `;
-            
-            try {
-                let resposta;
-                try {
-                    resposta = await fetch(API_URL);
-                    if (!resposta.ok) throw new Error('Falha ao obter filmes da URL primária');
-                } catch (primeiroErro) {
-                    const fallbackUrl = API_URL.includes('127.0.0.1') || API_URL.includes('localhost')
-                        ? 'https://filmes-e-seriesana.onrender.com/filmes'
-                        : 'http://127.0.0.1:5000/filmes';
-                    resposta = await fetch(fallbackUrl);
-                    if (resposta.ok) API_URL = fallbackUrl;
-                }
-                
-                todosOsFilmes = await resposta.json();
-                aplicarFiltroOrdem(filtroAtual);
-            } catch (erro) {
-                console.error('Erro de conexão:', erro);
-                divLista.innerHTML = `
-                    <div class="cr-empty-state">
-                        <div class="cr-empty-icon">⚠️</div>
-                        <h3 class="cr-empty-title">Não foi possível conectar ao servidor</h3>
-                        <p class="cr-empty-desc">Verifique se o backend Python está em execução ou confira sua conexão com o banco Neon.</p>
-                        <button class="btn-hero-primary" onclick="carregarFilmes()">Tentar Novamente</button>
-                    </div>
-                `;
-                document.getElementById('contadorFilmes').innerText = 'Servidor Offline';
-            }
-        }
-
-        // Renderiza lista com cartões Crunchyroll
-        function renderizarLista(filmes) {
-            const divLista = document.getElementById('listaFilmes');
-            const contador = document.getElementById('contadorFilmes');
-            divLista.innerHTML = '';
-
-            contador.innerText = `${filmes.length} título${filmes.length === 1 ? '' : 's'} encontrado${filmes.length === 1 ? '' : 's'}`;
-
-            if (!filmes || filmes.length === 0) {
-                divLista.innerHTML = `
-                    <div class="cr-empty-state">
-                        <div class="cr-empty-icon">🎬</div>
-                        <h3 class="cr-empty-title">Nenhum título encontrado</h3>
-                        <p class="cr-empty-desc">Adicione um novo filme ou tente pesquisar por outro termo na barra de busca.</p>
-                        <button class="btn-hero-primary" onclick="abrirModalCadastro()">+ Cadastrar Primeiro Título</button>
-                    </div>
-                `;
-                return;
-            }
-
-            filmes.forEach(filme => {
-                const tema = obterTemaPoster(filme.id, filme.titulo);
-                const descTexto = filme.descricao ? escapeHtml(filme.descricao) : 'Sem sinopse cadastrada.';
-
-                // 🌟 MÁGICA DO TRAILER AQUI:
-                const acaoPlay = filme.link_trailer 
-                    ? `onclick="window.open('${escapeHtml(filme.link_trailer)}', '_blank')"` 
-                    : `onclick="exibirToast('Nenhum trailer cadastrado para este título.', true)"`;
-
-                // 🌟 MÁGICA DA CAPA AQUI:
-                const estiloFundo = filme.url_capa 
-                    ? `background: url('${filme.url_capa}') center/cover no-repeat;` 
-                    : `background: ${tema.bg};`;
-
-                const cardHtml = `
-                    <article class="cr-card" id="card-${filme.id}">
-                        <!-- Pôster do Cartão -->
-                        <div class="cr-poster">
-                            <div class="cr-poster-bg" style="${estiloFundo}"></div>
-                            <div class="cr-poster-overlay"></div>
-                            
-                            <!-- Badges -->
-                            <div class="cr-poster-badges">
-                                <span class="cr-badge-dub">DUB | LEG</span>
-                                <span class="cr-badge-year">${filme.ano || '—'}</span>
-                            </div>
-
-                            <!-- Botão de Play no Hover (AGORA COM O TRAILER!) -->
-                            <div class="cr-poster-play" title="Assistir Trailer" ${acaoPlay}>
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <polygon points="6 4 20 12 6 20 6 4"></polygon>
-                                </svg>
-                            </div>
-
-                            <span class="cr-poster-category">${tema.icon} ${tema.cat}</span>
-                        </div>
-
-                        <!-- Detalhes do Cartão -->
-                        <div class="cr-card-body">
-                            <h3 class="cr-card-title" title="${escapeHtml(filme.titulo || '')}">${escapeHtml(filme.titulo || 'Sem Título')}</h3>
-                            
-                            <div class="cr-card-director">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                </svg>
-                                <span>${escapeHtml(filme.diretor || 'Desconhecido')}</span>
-                            </div>
-
-                            <p class="cr-card-desc">${descTexto}</p>
-
-                            <!-- Ações (Só aparecem se tiver feito login) -->
-                            ${tokenJWT ? `
-                            <div class="cr-card-actions">
-                                <button class="btn-card-edit" onclick="prepararEdicao(${filme.id})" title="Editar título">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    Editar
-                                </button>
-                                <button class="btn-card-delete" onclick="excluirFilme(${filme.id}, '${escapeHtml(filme.titulo || '')}')" title="Excluir do catálogo">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                </button>
-                            </div>
-                            ` : ''}
-                    </article>
-                `;
-                divLista.insertAdjacentHTML('beforeend', cardHtml);
-            });
-        }
-
-        // Filtra por termo digitado na barra de pesquisa
-        function filtrarFilmes() {
-            const termo = document.getElementById('pesquisa').value.toLowerCase().trim();
-            const filtrados = todosOsFilmes.filter(f => {
-                const titulo = (f.titulo || '').toLowerCase();
-                const descricao = (f.descricao || '').toLowerCase();
-                const diretor = (f.diretor || '').toLowerCase();
-                return titulo.includes(termo) || descricao.includes(termo) || diretor.includes(termo);
-            });
-            renderizarLista(filtrados);
-        }
-
-        // Filtra / Ordena títulos
-        function aplicarFiltroOrdem(tipo, botaoClicado) {
-            filtroAtual = tipo;
-            
-            // Atualiza classe ativa dos botões
-            if (botaoClicado) {
-                document.querySelectorAll('.cr-filter-btn').forEach(btn => btn.classList.remove('active'));
-                botaoClicado.classList.add('active');
-            }
-
-            let ordenados = [...todosOsFilmes];
-
-            if (tipo === 'recentes') {
-                ordenados.sort((a, b) => (b.ano || 0) - (a.ano || 0));
-            } else if (tipo === 'antigos') {
-                ordenados.sort((a, b) => (a.ano || 0) - (b.ano || 0));
-            } else if (tipo === 'az') {
-                ordenados.sort((a, b) => (a.titulo || '').localeCompare(b.titulo || ''));
-            }
-
-            // Considera também a pesquisa digitada se houver
-            const termo = document.getElementById('pesquisa').value.toLowerCase().trim();
-            if (termo) {
-                ordenados = ordenados.filter(f => {
-                    const titulo = (f.titulo || '').toLowerCase();
-                    const descricao = (f.descricao || '').toLowerCase();
-                    const diretor = (f.diretor || '').toLowerCase();
-                    return titulo.includes(termo) || descricao.includes(termo) || diretor.includes(termo);
-                });
-            }
-
-            renderizarLista(ordenados);
-        }
-
-        // Gerenciamento do Modal
-        function abrirModalCadastro() {
-            limparFormulario();
-            document.getElementById('tituloForm').innerText = 'Cadastrar Novo Título';
-            document.getElementById('btnSalvar').innerText = 'Salvar no Catálogo';
-            const modal = document.getElementById('modalFilme');
-            modal.classList.add('active');
-            document.getElementById('titulo').focus();
-        }
-
-        function fecharModal() {
-            const modal = document.getElementById('modalFilme');
-            modal.classList.remove('active');
-        }
-
-        function tratarCliqueFora(e) {
-            if (e.target.id === 'modalFilme') {
-                fecharModal();
-            }
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') fecharModal();
-        });
-
-        // Submissão do Formulário (Salvar / Editar)
-        async function salvarFilme(e) {
-            e.preventDefault();
-            const btnSalvar = document.getElementById('btnSalvar');
-            const id = document.getElementById('filmeId').value;
-            const filmeDado = {
-                titulo: document.getElementById('titulo').value.trim(),
-                diretor: document.getElementById('diretor').value.trim(),
-                ano: parseInt(document.getElementById('ano').value),
-                descricao: document.getElementById('descricao').value.trim(),
-                link_trailer: document.getElementById('link_trailer').value.trim(),
-                url_capa: document.getElementById('url_capa').value.trim() // <-- Adicione esta linha
-            };
-
-            btnSalvar.disabled = true;
-            btnSalvar.innerText = 'Salvando...';
-
-            try {
-                let resposta;
-                if (id) {
-                    resposta = await fetch(`${API_URL}/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${tokenJWT}` },
-                        body: JSON.stringify(filmeDado)
-                    });
-                    exibirToast('Título atualizado com sucesso!');
-                } else {
-                    resposta = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${tokenJWT}` },
-                        body: JSON.stringify(filmeDado)
-                    });
-                    exibirToast('Novo título adicionado ao catálogo!');
-                }
-
-                if (!resposta.ok) {
-                    const erroJson = await resposta.json();
-                    throw new Error(erroJson.erro || 'Falha ao salvar título');
-                }
-
-                fecharModal();
-                limparFormulario();
-                await carregarFilmes();
-            } catch (err) {
-                exibirToast(err.message || 'Erro ao processar requisição', true);
-            } finally {
-                btnSalvar.disabled = false;
-                btnSalvar.innerText = id ? 'Atualizar Título' : 'Salvar no Catálogo';
-            }
-        }
-
-        // Excluir Filme
-        async function excluirFilme(id, titulo) {
-            const nomeExibido = titulo ? `"${titulo}"` : 'este título';
-            if (confirm(`Deseja realmente remover ${nomeExibido} do catálogo Crunchyroll?`)) {
-                try {
-                    const resposta = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                    if (!resposta.ok) throw new Error('Erro ao excluir');
-                    exibirToast(`Título removido do catálogo com sucesso.`);
-                    carregarFilmes();
-                } catch (err) {
-                    exibirToast('Erro ao remover o filme.', true);
-                }
-            }
-        }
-
-        const resposta = await fetch(`${API_URL}/${id}`, { 
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${tokenJWT}` }
-});
-
-        // Preparar Edição
-        function prepararEdicao(id) {
-            const filme = todosOsFilmes.find(f => f.id === id);
-            if (!filme) return;
-
-            document.getElementById('filmeId').value = filme.id;
-            document.getElementById('titulo').value = filme.titulo || '';
-            document.getElementById('diretor').value = filme.diretor || '';
-            document.getElementById('ano').value = filme.ano || '';
-            document.getElementById('descricao').value = filme.descricao || '';
-            document.getElementById('link_trailer').value = filme.link_trailer || '';
-            
-            document.getElementById('tituloForm').innerText = 'Editar Título';
-            document.getElementById('btnSalvar').innerText = 'Atualizar Título';
-
-            const modal = document.getElementById('modalFilme');
-            modal.classList.add('active');
-            document.getElementById('titulo').focus();
-
-            document.getElementById('url_capa').value = filme.url_capa || '';
-        }
-
-        function limparFormulario() {
-            document.getElementById('formFilme').reset();
-            document.getElementById('filmeId').value = '';
-            document.getElementById('descricao').value = '';
-            document.getElementById('link_trailer').value = '';
-            document.getElementById('url_capa').value = '';
-        }
-
-        // Sistema de Notificações Toast
-        function exibirToast(mensagem, isErro = false) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `cr-toast ${isErro ? 'toast-error' : ''}`;
-            toast.innerHTML = `
-                <span>${isErro ? '❌' : '✨'}</span>
-                <div>${escapeHtml(mensagem)}</div>
-            `;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(60px)';
-                toast.style.transition = 'all 0.4s ease';
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
-        }
-
-        // Sanitização contra XSS
-        function escapeHtml(str) { 
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        // Inicia o carregamento ao abrir a página
-        carregarFilmes();
-
-        // --- SISTEMA DE TEMA (DARK/LIGHT) ---
-const btnTema = document.getElementById('btnTema');
-const temaAtual = localStorage.getItem('tema') || 'dark'; // O escuro é o padrão
-
-// Aplica o tema guardado logo ao abrir a página
-if (temaAtual === 'light') {
-    document.body.setAttribute('data-theme', 'light');
-    btnTema.innerText = '🌙';
-}
-
-function alternarTema() {
-    const body = document.body;
-    const temaNovo = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    
-    if (temaNovo === 'light') {
-        body.setAttribute('data-theme', 'light');
-        btnTema.innerText = '🌙'; // Mostra a lua para voltar ao escuro
-        localStorage.setItem('tema', 'light');
-    } else {
-        body.removeAttribute('data-theme');
-        btnTema.innerText = '☀️'; // Mostra o sol para voltar ao claro
-        localStorage.setItem('tema', 'dark');
-    }
-}
-
-// --- SISTEMA DE AUTENTICAÇÃO (JWT) ---
+        // --- SISTEMA DE AUTENTICAÇÃO (JWT) ---
         let tokenJWT = localStorage.getItem('tokenJWT');
 
         function atualizarInterfaceAuth() {
@@ -685,19 +303,21 @@ function alternarTema() {
             const badge = document.querySelector('.cr-user-badge');
             
             if (tokenJWT) {
-                // Modo Administrador
                 if(btnAddNav) btnAddNav.style.display = 'flex';
                 if(btnHeroSec) btnHeroSec.style.display = 'inline-flex';
-                badge.innerText = 'SAIR';
-                badge.title = 'Encerrar Sessão';
-                badge.onclick = fazerLogout;
+                if(badge) {
+                    badge.innerText = 'SAIR';
+                    badge.title = 'Encerrar Sessão';
+                    badge.onclick = fazerLogout;
+                }
             } else {
-                // Modo Visitante (Somente Leitura)
                 if(btnAddNav) btnAddNav.style.display = 'none';
                 if(btnHeroSec) btnHeroSec.style.display = 'none';
-                badge.innerText = 'ADM';
-                badge.title = 'Fazer Login';
-                badge.onclick = abrirModalLogin;
+                if(badge) {
+                    badge.innerText = 'ADM';
+                    badge.title = 'Fazer Login';
+                    badge.onclick = abrirModalLogin;
+                }
             }
         }
 
@@ -720,7 +340,6 @@ function alternarTema() {
             btn.disabled = true;
             
             try {
-                // Tira o /filmes do final da URL para acessar a rota /login
                 const urlBase = API_URL.replace('/filmes', ''); 
                 const resposta = await fetch(`${urlBase}/login`, {
                     method: 'POST',
@@ -737,7 +356,7 @@ function alternarTema() {
                 exibirToast('Bem-vinda de volta, Administradora!');
                 
                 atualizarInterfaceAuth();
-                carregarFilmes(); // Recarrega os filmes para mostrar os botões de edição
+                carregarFilmes(); 
             } catch(err) {
                 exibirToast(err.message, true);
             } finally {
@@ -751,12 +370,344 @@ function alternarTema() {
             localStorage.removeItem('tokenJWT');
             exibirToast('Sessão encerrada com segurança.');
             atualizarInterfaceAuth();
-            // Inicia o sistema
+            carregarFilmes();
+        }
+
+        // --- SISTEMA DE TEMA (DARK/LIGHT) ---
+        const btnTema = document.getElementById('btnTema');
+        const temaAtual = localStorage.getItem('tema') || 'dark';
+
+        if (temaAtual === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+            if(btnTema) btnTema.innerText = '🌙';
+        }
+
+        function alternarTema() {
+            const body = document.body;
+            const temaNovo = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            
+            if (temaNovo === 'light') {
+                body.setAttribute('data-theme', 'light');
+                if(btnTema) btnTema.innerText = '🌙';
+                localStorage.setItem('tema', 'light');
+            } else {
+                body.removeAttribute('data-theme');
+                if(btnTema) btnTema.innerText = '☀️';
+                localStorage.setItem('tema', 'dark');
+            }
+        }
+
+        // Estilos das capas
+        const temasPoster = [
+            { bg: 'linear-gradient(135deg, #ff640a 0%, #a32200 60%, #150500 100%)', cat: 'AÇÃO & AVENTURA', icon: '🔥' },
+            { bg: 'linear-gradient(135deg, #6c5ce7 0%, #2b1055 60%, #0d051a 100%)', cat: 'FICÇÃO CIENTÍFICA', icon: '⚡' },
+            { bg: 'linear-gradient(135deg, #00b894 0%, #004d40 60%, #001a14 100%)', cat: 'FANTASIA', icon: '🌌' },
+            { bg: 'linear-gradient(135deg, #e84393 0%, #631238 60%, #1a030c 100%)', cat: 'DRAMA', icon: '🌸' },
+            { bg: 'linear-gradient(135deg, #0984e3 0%, #0b3966 60%, #021221 100%)', cat: 'SHONEN', icon: '⚔️' },
+            { bg: 'linear-gradient(135deg, #f39c12 0%, #7d4800 60%, #1f1100 100%)', cat: 'CLÁSSICO', icon: '⭐' },
+            { bg: 'linear-gradient(135deg, #e17055 0%, #631f10 60%, #1b0703 100%)', cat: 'SUSPENSE', icon: '🌑' }
+        ];
+
+        function obterTemaPoster(id, titulo) {
+            let hash = 0;
+            const str = (titulo || '') + id;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return temasPoster[Math.abs(hash) % temasPoster.length];
+        }
+
+        // Carrega filmes
+        async function carregarFilmes() {
+            const divLista = document.getElementById('listaFilmes');
+            divLista.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
+                    <div class="cr-spinner"></div>
+                    <p style="color: var(--cr-text-secondary); margin-top: 10px;">Carregando produções...</p>
+                </div>
+            `;
+            
+            try {
+                let resposta;
+                try {
+                    resposta = await fetch(API_URL);
+                    if (!resposta.ok) throw new Error('Falha ao obter filmes');
+                } catch (primeiroErro) {
+                    const fallbackUrl = API_URL.includes('127.0.0.1') || API_URL.includes('localhost')
+                        ? 'https://filmes-e-seriesana.onrender.com/filmes'
+                        : 'http://127.0.0.1:5000/filmes';
+                    resposta = await fetch(fallbackUrl);
+                    if (resposta.ok) API_URL = fallbackUrl;
+                }
+                
+                todosOsFilmes = await resposta.json();
+                aplicarFiltroOrdem(filtroAtual);
+            } catch (erro) {
+                console.error('Erro de conexão:', erro);
+                divLista.innerHTML = `
+                    <div class="cr-empty-state">
+                        <div class="cr-empty-icon">⚠️</div>
+                        <h3 class="cr-empty-title">Não foi possível conectar ao servidor</h3>
+                        <p class="cr-empty-desc">Verifique se o backend Python está em execução ou confira sua conexão.</p>
+                        <button class="btn-hero-primary" onclick="carregarFilmes()">Tentar Novamente</button>
+                    </div>
+                `;
+                document.getElementById('contadorFilmes').innerText = 'Servidor Offline';
+            }
+        }
+
+        // Renderiza lista
+        function renderizarLista(filmes) {
+            const divLista = document.getElementById('listaFilmes');
+            const contador = document.getElementById('contadorFilmes');
+            divLista.innerHTML = '';
+            contador.innerText = `${filmes.length} título${filmes.length === 1 ? '' : 's'} encontrado${filmes.length === 1 ? '' : 's'}`;
+
+            if (!filmes || filmes.length === 0) {
+                divLista.innerHTML = `
+                    <div class="cr-empty-state">
+                        <div class="cr-empty-icon">🎬</div>
+                        <h3 class="cr-empty-title">Nenhum título encontrado</h3>
+                        <p class="cr-empty-desc">Adicione um novo filme ou tente pesquisar por outro termo.</p>
+                        ${tokenJWT ? `<button class="btn-hero-primary" onclick="abrirModalCadastro()">+ Cadastrar Primeiro Título</button>` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            filmes.forEach(filme => {
+                const tema = obterTemaPoster(filme.id, filme.titulo);
+                const descTexto = filme.descricao ? escapeHtml(filme.descricao) : 'Sem sinopse cadastrada.';
+
+                const acaoPlay = filme.link_trailer 
+                    ? `onclick="window.open('${escapeHtml(filme.link_trailer)}', '_blank')"` 
+                    : `onclick="exibirToast('Nenhum trailer cadastrado para este título.', true)"`;
+
+                const estiloFundo = filme.url_capa 
+                    ? `background: url('${filme.url_capa}') center/cover no-repeat;` 
+                    : `background: ${tema.bg};`;
+
+                const cardHtml = `
+                    <article class="cr-card" id="card-${filme.id}">
+                        <div class="cr-poster">
+                            <div class="cr-poster-bg" style="${estiloFundo}"></div>
+                            <div class="cr-poster-overlay"></div>
+                            <div class="cr-poster-badges">
+                                <span class="cr-badge-dub">DUB | LEG</span>
+                                <span class="cr-badge-year">${filme.ano || '—'}</span>
+                            </div>
+                            <div class="cr-poster-play" title="Assistir Trailer" ${acaoPlay}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+                            </div>
+                            <span class="cr-poster-category">${tema.icon} ${tema.cat}</span>
+                        </div>
+                        <div class="cr-card-body">
+                            <h3 class="cr-card-title" title="${escapeHtml(filme.titulo || '')}">${escapeHtml(filme.titulo || 'Sem Título')}</h3>
+                            <div class="cr-card-director">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span>${escapeHtml(filme.diretor || 'Desconhecido')}</span>
+                            </div>
+                            <p class="cr-card-desc">${descTexto}</p>
+                            
+                            ${tokenJWT ? `
+                            <div class="cr-card-actions">
+                                <button class="btn-card-edit" onclick="prepararEdicao(${filme.id})" title="Editar título">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Editar
+                                </button>
+                                <button class="btn-card-delete" onclick="excluirFilme(${filme.id}, '${escapeHtml(filme.titulo || '')}')" title="Excluir do catálogo">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </article>
+                `;
+                divLista.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function filtrarFilmes() {
+            const termo = document.getElementById('pesquisa').value.toLowerCase().trim();
+            const filtrados = todosOsFilmes.filter(f => {
+                const titulo = (f.titulo || '').toLowerCase();
+                const descricao = (f.descricao || '').toLowerCase();
+                const diretor = (f.diretor || '').toLowerCase();
+                return titulo.includes(termo) || descricao.includes(termo) || diretor.includes(termo);
+            });
+            renderizarLista(filtrados);
+        }
+
+        function aplicarFiltroOrdem(tipo, botaoClicado) {
+            filtroAtual = tipo;
+            if (botaoClicado) {
+                document.querySelectorAll('.cr-filter-btn').forEach(btn => btn.classList.remove('active'));
+                botaoClicado.classList.add('active');
+            }
+            let ordenados = [...todosOsFilmes];
+            if (tipo === 'recentes') ordenados.sort((a, b) => (b.ano || 0) - (a.ano || 0));
+            else if (tipo === 'antigos') ordenados.sort((a, b) => (a.ano || 0) - (b.ano || 0));
+            else if (tipo === 'az') ordenados.sort((a, b) => (a.titulo || '').localeCompare(b.titulo || ''));
+            
+            const termo = document.getElementById('pesquisa').value.toLowerCase().trim();
+            if (termo) {
+                ordenados = ordenados.filter(f => {
+                    const titulo = (f.titulo || '').toLowerCase();
+                    const descricao = (f.descricao || '').toLowerCase();
+                    const diretor = (f.diretor || '').toLowerCase();
+                    return titulo.includes(termo) || descricao.includes(termo) || diretor.includes(termo);
+                });
+            }
+            renderizarLista(ordenados);
+        }
+
+        function abrirModalCadastro() {
+            limparFormulario();
+            document.getElementById('tituloForm').innerText = 'Cadastrar Novo Título';
+            document.getElementById('btnSalvar').innerText = 'Salvar no Catálogo';
+            document.getElementById('modalFilme').classList.add('active');
+            document.getElementById('titulo').focus();
+        }
+
+        function fecharModal() {
+            document.getElementById('modalFilme').classList.remove('active');
+        }
+
+        function tratarCliqueFora(e) {
+            if (e.target.id === 'modalFilme') fecharModal();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                fecharModal();
+                fecharModalLogin();
+            }
+        });
+
+        async function salvarFilme(e) {
+            e.preventDefault();
+            if(!tokenJWT) return exibirToast('Apenas administradores podem fazer isto!', true);
+            
+            const btnSalvar = document.getElementById('btnSalvar');
+            const id = document.getElementById('filmeId').value;
+            const filmeDado = {
+                titulo: document.getElementById('titulo').value.trim(),
+                diretor: document.getElementById('diretor').value.trim(),
+                ano: parseInt(document.getElementById('ano').value),
+                descricao: document.getElementById('descricao').value.trim(),
+                link_trailer: document.getElementById('link_trailer').value.trim(),
+                url_capa: document.getElementById('url_capa').value.trim()
+            };
+
+            btnSalvar.disabled = true;
+            btnSalvar.innerText = 'Salvando...';
+
+            try {
+                let resposta;
+                if (id) {
+                    resposta = await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenJWT}` },
+                        body: JSON.stringify(filmeDado)
+                    });
+                } else {
+                    resposta = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenJWT}` },
+                        body: JSON.stringify(filmeDado)
+                    });
+                }
+
+                if (!resposta.ok) {
+                    const erroJson = await resposta.json();
+                    if(resposta.status === 401) fazerLogout(); // Se o token expirou
+                    throw new Error(erroJson.erro || 'Falha ao salvar título');
+                }
+
+                fecharModal();
+                limparFormulario();
+                exibirToast(id ? 'Título atualizado!' : 'Novo título adicionado!');
+                await carregarFilmes();
+            } catch (err) {
+                exibirToast(err.message || 'Erro ao processar requisição', true);
+            } finally {
+                btnSalvar.disabled = false;
+                btnSalvar.innerText = id ? 'Atualizar Título' : 'Salvar no Catálogo';
+            }
+        }
+
+        async function excluirFilme(id, titulo) {
+            if(!tokenJWT) return exibirToast('Acesso negado!', true);
+            
+            const nomeExibido = titulo ? `"${titulo}"` : 'este título';
+            if (confirm(`Deseja realmente remover ${nomeExibido}?`)) {
+                try {
+                    const resposta = await fetch(`${API_URL}/${id}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${tokenJWT}` }
+                    });
+                    if (!resposta.ok) {
+                        if(resposta.status === 401) fazerLogout();
+                        throw new Error('Erro ao excluir');
+                    }
+                    exibirToast(`Título removido com sucesso.`);
+                    carregarFilmes();
+                } catch (err) {
+                    exibirToast('Erro ao remover o filme.', true);
+                }
+            }
+        }
+
+        function prepararEdicao(id) {
+            const filme = todosOsFilmes.find(f => f.id === id);
+            if (!filme) return;
+
+            document.getElementById('filmeId').value = filme.id;
+            document.getElementById('titulo').value = filme.titulo || '';
+            document.getElementById('diretor').value = filme.diretor || '';
+            document.getElementById('ano').value = filme.ano || '';
+            document.getElementById('descricao').value = filme.descricao || '';
+            document.getElementById('link_trailer').value = filme.link_trailer || '';
+            document.getElementById('url_capa').value = filme.url_capa || '';
+            
+            document.getElementById('tituloForm').innerText = 'Editar Título';
+            document.getElementById('btnSalvar').innerText = 'Atualizar Título';
+
+            document.getElementById('modalFilme').classList.add('active');
+            document.getElementById('titulo').focus();
+        }
+
+        function limparFormulario() {
+            document.getElementById('formFilme').reset();
+            document.getElementById('filmeId').value = '';
+            document.getElementById('link_trailer').value = '';
+            document.getElementById('url_capa').value = '';
+        }
+
+        function exibirToast(mensagem, isErro = false) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `cr-toast ${isErro ? 'toast-error' : ''}`;
+            toast.innerHTML = `<span>${isErro ? '❌' : '✨'}</span><div>${escapeHtml(mensagem)}</div>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(60px)';
+                toast.style.transition = 'all 0.4s ease';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        function escapeHtml(str) { 
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // Inicia o sistema
         atualizarInterfaceAuth();
         carregarFilmes();
-            carregarFilmes(); // Recarrega para esconder os botões
-            
-        }
     </script>
 </body>
 </html>
