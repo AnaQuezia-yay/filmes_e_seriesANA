@@ -124,7 +124,34 @@
         </div>
 
     </main>
-
+    <!-- ================= MODAL DE LOGIN ================= -->
+    <div class="cr-modal-overlay" id="modalLogin" onclick="if(event.target.id === 'modalLogin') fecharModalLogin()">
+        <div class="cr-modal" role="dialog" aria-modal="true">
+            <div class="cr-modal-header">
+                <div class="cr-modal-title-wrap">
+                    <div class="cr-orange-bar"></div>
+                    <h3 class="cr-modal-title">Acesso Restrito</h3>
+                </div>
+                <button type="button" class="cr-modal-close" onclick="fecharModalLogin()">&times;</button>
+            </div>
+            <form id="formLogin" onsubmit="fazerLogin(event)">
+                <div class="cr-modal-body">
+                    <div class="cr-form-group">
+                        <label for="username">Usuário Administrador</label>
+                        <input type="text" id="username" class="cr-form-control" required placeholder="Digite o usuário...">
+                    </div>
+                    <div class="cr-form-group">
+                        <label for="password">Senha de Acesso</label>
+                        <input type="password" id="password" class="cr-form-control" required placeholder="Digite a senha...">
+                    </div>
+                    <div class="cr-modal-footer">
+                        <button type="button" class="btn-modal-cancel" onclick="fecharModalLogin()">Cancelar</button>
+                        <button type="submit" id="btnLogin" class="btn-modal-submit">Entrar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- ================= MODAL DE CADASTRO / EDIÇÃO ================= -->
     <div class="cr-modal-overlay" id="modalFilme" onclick="tratarCliqueFora(event)">
         <div class="cr-modal" role="dialog" aria-modal="true">
@@ -399,23 +426,18 @@
 
                             <p class="cr-card-desc">${descTexto}</p>
 
-                            <!-- Ações -->
+                            <!-- Ações (Só aparecem se tiver feito login) -->
+                            ${tokenJWT ? `
                             <div class="cr-card-actions">
                                 <button class="btn-card-edit" onclick="prepararEdicao(${filme.id})" title="Editar título">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                    </svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     Editar
                                 </button>
                                 <button class="btn-card-delete" onclick="excluirFilme(${filme.id}, '${escapeHtml(filme.titulo || '')}')" title="Excluir do catálogo">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                             </div>
-                        </div>
+                            ` : ''}
                     </article>
                 `;
                 divLista.insertAdjacentHTML('beforeend', cardHtml);
@@ -515,14 +537,16 @@
                 if (id) {
                     resposta = await fetch(`${API_URL}/${id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${tokenJWT}` },
                         body: JSON.stringify(filmeDado)
                     });
                     exibirToast('Título atualizado com sucesso!');
                 } else {
                     resposta = await fetch(API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${tokenJWT}` },
                         body: JSON.stringify(filmeDado)
                     });
                     exibirToast('Novo título adicionado ao catálogo!');
@@ -558,6 +582,11 @@
                 }
             }
         }
+
+        const resposta = await fetch(`${API_URL}/${id}`, { 
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${tokenJWT}` }
+});
 
         // Preparar Edição
         function prepararEdicao(id) {
@@ -646,6 +675,88 @@ function alternarTema() {
         localStorage.setItem('tema', 'dark');
     }
 }
+
+// --- SISTEMA DE AUTENTICAÇÃO (JWT) ---
+        let tokenJWT = localStorage.getItem('tokenJWT');
+
+        function atualizarInterfaceAuth() {
+            const btnAddNav = document.querySelector('.btn-add-nav');
+            const btnHeroSec = document.querySelector('.btn-hero-secondary');
+            const badge = document.querySelector('.cr-user-badge');
+            
+            if (tokenJWT) {
+                // Modo Administrador
+                if(btnAddNav) btnAddNav.style.display = 'flex';
+                if(btnHeroSec) btnHeroSec.style.display = 'inline-flex';
+                badge.innerText = 'SAIR';
+                badge.title = 'Encerrar Sessão';
+                badge.onclick = fazerLogout;
+            } else {
+                // Modo Visitante (Somente Leitura)
+                if(btnAddNav) btnAddNav.style.display = 'none';
+                if(btnHeroSec) btnHeroSec.style.display = 'none';
+                badge.innerText = 'ADM';
+                badge.title = 'Fazer Login';
+                badge.onclick = abrirModalLogin;
+            }
+        }
+
+        function abrirModalLogin() {
+            document.getElementById('modalLogin').classList.add('active');
+            document.getElementById('username').focus();
+        }
+
+        function fecharModalLogin() {
+            document.getElementById('modalLogin').classList.remove('active');
+            document.getElementById('formLogin').reset();
+        }
+
+        async function fazerLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const btn = document.getElementById('btnLogin');
+            btn.innerText = 'Verificando...';
+            btn.disabled = true;
+            
+            try {
+                // Tira o /filmes do final da URL para acessar a rota /login
+                const urlBase = API_URL.replace('/filmes', ''); 
+                const resposta = await fetch(`${urlBase}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: user, password: pass})
+                });
+                
+                const dados = await resposta.json();
+                if(!resposta.ok) throw new Error(dados.erro || 'Falha no login');
+                
+                tokenJWT = dados.token;
+                localStorage.setItem('tokenJWT', tokenJWT);
+                fecharModalLogin();
+                exibirToast('Bem-vinda de volta, Administradora!');
+                
+                atualizarInterfaceAuth();
+                carregarFilmes(); // Recarrega os filmes para mostrar os botões de edição
+            } catch(err) {
+                exibirToast(err.message, true);
+            } finally {
+                btn.innerText = 'Entrar';
+                btn.disabled = false;
+            }
+        }
+
+        function fazerLogout() {
+            tokenJWT = null;
+            localStorage.removeItem('tokenJWT');
+            exibirToast('Sessão encerrada com segurança.');
+            atualizarInterfaceAuth();
+            // Inicia o sistema
+        atualizarInterfaceAuth();
+        carregarFilmes();
+            carregarFilmes(); // Recarrega para esconder os botões
+            
+        }
     </script>
 </body>
 </html>
