@@ -293,17 +293,17 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-       // URL da API com fallback robusto
+        // URL da API com fallback robusto
         let API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
             ? 'http://127.0.0.1:5000/filmes'
             : 'https://filmes-e-seriesana.onrender.com/filmes';
 
         let todosOsFilmes = [];
         let filtroAtual = 'todos';
-
-        // --- SISTEMA DE AUTENTICAÇÃO (JWT) ---
         let tokenJWT = localStorage.getItem('tokenJWT');
+        let modoLogin = true;
 
+        // --- SISTEMA DE AUTENTICAÇÃO ---
         function atualizarInterfaceAuth() {
             const btnAddNav = document.querySelector('.btn-add-nav');
             const btnHeroSec = document.querySelector('.btn-hero-secondary');
@@ -321,14 +321,12 @@
                 if(btnAddNav) btnAddNav.style.display = 'none';
                 if(btnHeroSec) btnHeroSec.style.display = 'none';
                 if(badge) {
-                    badge.innerText = 'ADM';
-                    badge.title = 'Fazer Login';
+                    badge.innerText = 'ENTRAR';
+                    badge.title = 'Fazer Login ou Cadastro';
                     badge.onclick = abrirModalLogin;
                 }
             }
         }
-
-        let modoLogin = true;
 
         function alternarModoAuth() {
             modoLogin = !modoLogin;
@@ -355,7 +353,7 @@
         function fecharModalLogin() {
             document.getElementById('modalLogin').classList.remove('active');
             document.getElementById('formLogin').reset();
-            if (!modoLogin) alternarModoAuth(); // Reseta a janela para "Login" ao fechar
+            if (!modoLogin) alternarModoAuth();
         }
 
         async function submeterAuth(e) {
@@ -369,7 +367,6 @@
             
             try {
                 if (modoLogin) {
-                    // --- MODO: FAZER LOGIN ---
                     const urlDeLogin = 'https://filmes-e-seriesana.onrender.com/login';
                     const resposta = await fetch(urlDeLogin, {
                         method: 'POST',
@@ -385,12 +382,11 @@
                     tokenJWT = dados.token;
                     localStorage.setItem('tokenJWT', tokenJWT);
                     fecharModalLogin();
-                    exibirToast(`Bem-vinda(o) de volta, ${user}!`);
+                    exibirToast(`Bem-vinda(o) de volta! Catálogo de ${user} carregado.`);
                     
                     atualizarInterfaceAuth();
                     carregarFilmes(); 
                 } else {
-                    // --- MODO: CRIAR CONTA ---
                     const urlDeRegistro = 'https://filmes-e-seriesana.onrender.com/registrar';
                     const resposta = await fetch(urlDeRegistro, {
                         method: 'POST',
@@ -401,9 +397,9 @@
                     const dados = await resposta.json();
                     if(!resposta.ok) throw new Error(dados.erro || 'Falha ao cadastrar');
                     
-                    exibirToast(dados.mensagem); // Mensagem de sucesso do Python
-                    alternarModoAuth(); // Troca a janela de volta para o modo Login
-                    document.getElementById('password').value = ''; // Apaga a senha para a pessoa digitar de novo
+                    exibirToast(dados.mensagem);
+                    alternarModoAuth();
+                    document.getElementById('password').value = '';
                 }
             } catch(err) {
                 exibirToast(err.message, true);
@@ -416,7 +412,7 @@
         function fazerLogout() {
             tokenJWT = null;
             localStorage.removeItem('tokenJWT');
-            exibirToast('Sessão encerrada com segurança.');
+            exibirToast('Sessão encerrada. Mostrando vitrine pública.');
             atualizarInterfaceAuth();
             carregarFilmes();
         }
@@ -445,7 +441,6 @@
             }
         }
 
-        // Estilos das capas
         const temasPoster = [
             { bg: 'linear-gradient(135deg, #ff640a 0%, #a32200 60%, #150500 100%)', cat: 'AÇÃO & AVENTURA', icon: '🔥' },
             { bg: 'linear-gradient(135deg, #6c5ce7 0%, #2b1055 60%, #0d051a 100%)', cat: 'FICÇÃO CIENTÍFICA', icon: '⚡' },
@@ -466,26 +461,35 @@
             return temasPoster[Math.abs(hash) % temasPoster.length];
         }
 
-        // Carrega filmes
+        // --- CARREGA FILMES (AGORA ENVIA O CRACHÁ PARA O PYTHON) ---
         async function carregarFilmes() {
             const divLista = document.getElementById('listaFilmes');
+            if (!divLista) return; // Trava de segurança: se a div não existir ainda, cancela a ação.
+
             divLista.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
                     <div class="cr-spinner"></div>
-                    <p style="color: var(--cr-text-secondary); margin-top: 10px;">Carregando produções...</p>
+                    <p style="color: var(--cr-text-secondary); margin-top: 10px;">Acessando o catálogo...</p>
                 </div>
             `;
             
             try {
+                // A MÁGICA DE IDENTIFICAÇÃO ACONTECE AQUI:
+                const configRequisicao = {};
+                if (tokenJWT) {
+                    // Se tiver logado, envia o crachá para pedir o catálogo pessoal
+                    configRequisicao.headers = { 'Authorization': `Bearer ${tokenJWT}` };
+                }
+
                 let resposta;
                 try {
-                    resposta = await fetch(API_URL);
+                    resposta = await fetch(API_URL, configRequisicao);
                     if (!resposta.ok) throw new Error('Falha ao obter filmes');
                 } catch (primeiroErro) {
                     const fallbackUrl = API_URL.includes('127.0.0.1') || API_URL.includes('localhost')
                         ? 'https://filmes-e-seriesana.onrender.com/filmes'
                         : 'http://127.0.0.1:5000/filmes';
-                    resposta = await fetch(fallbackUrl);
+                    resposta = await fetch(fallbackUrl, configRequisicao);
                     if (resposta.ok) API_URL = fallbackUrl;
                 }
                 
@@ -505,10 +509,12 @@
             }
         }
 
-        // Renderiza lista
         function renderizarLista(filmes) {
             const divLista = document.getElementById('listaFilmes');
             const contador = document.getElementById('contadorFilmes');
+            
+            if (!divLista || !contador) return; // Trava de segurança
+
             divLista.innerHTML = '';
             contador.innerText = `${filmes.length} título${filmes.length === 1 ? '' : 's'} encontrado${filmes.length === 1 ? '' : 's'}`;
 
@@ -516,8 +522,8 @@
                 divLista.innerHTML = `
                     <div class="cr-empty-state">
                         <div class="cr-empty-icon">🎬</div>
-                        <h3 class="cr-empty-title">Nenhum título encontrado</h3>
-                        <p class="cr-empty-desc">Adicione um novo filme ou tente pesquisar por outro termo.</p>
+                        <h3 class="cr-empty-title">Seu catálogo está vazio</h3>
+                        <p class="cr-empty-desc">Adicione um novo filme para começar a sua coleção.</p>
                         ${tokenJWT ? `<button class="btn-hero-primary" onclick="abrirModalCadastro()">+ Cadastrar Primeiro Título</button>` : ''}
                     </div>
                 `;
@@ -527,7 +533,6 @@
             filmes.forEach(filme => {
                 const tema = obterTemaPoster(filme.id, filme.titulo);
                 const descTexto = filme.descricao ? escapeHtml(filme.descricao) : 'Sem sinopse cadastrada.';
-
                 const acaoPlay = filme.link_trailer 
                     ? `onclick="window.open('${escapeHtml(filme.link_trailer)}', '_blank')"` 
                     : `onclick="exibirToast('Nenhum trailer cadastrado para este título.', true)"`;
@@ -669,7 +674,7 @@
 
                 if (!resposta.ok) {
                     const erroJson = await resposta.json();
-                    if(resposta.status === 401) fazerLogout(); // Se o token expirou
+                    if(resposta.status === 401) fazerLogout(); 
                     throw new Error(erroJson.erro || 'Falha ao salvar título');
                 }
 
@@ -753,9 +758,16 @@
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // Inicia o sistema
-        atualizarInterfaceAuth();
-        carregarFilmes();
+        // Inicia o sistema apenas quando todo o HTML estiver desenhado na tela
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                atualizarInterfaceAuth();
+                carregarFilmes();
+            });
+        } else {
+            atualizarInterfaceAuth();
+            carregarFilmes();
+        }
     </script>
 </body>
 </html>
