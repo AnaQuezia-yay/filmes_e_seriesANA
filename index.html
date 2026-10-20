@@ -125,25 +125,32 @@
 
     </main>
     <!-- ================= MODAL DE LOGIN ================= -->
+    <!-- ================= MODAL DE LOGIN / CADASTRO ================= -->
     <div class="cr-modal-overlay" id="modalLogin" onclick="if(event.target.id === 'modalLogin') fecharModalLogin()">
         <div class="cr-modal" role="dialog" aria-modal="true">
             <div class="cr-modal-header">
                 <div class="cr-modal-title-wrap">
                     <div class="cr-orange-bar"></div>
-                    <h3 class="cr-modal-title">Acesso Restrito</h3>
+                    <h3 class="cr-modal-title" id="tituloModalAuth">Acesso Restrito</h3>
                 </div>
                 <button type="button" class="cr-modal-close" onclick="fecharModalLogin()">&times;</button>
             </div>
-            <form id="formLogin" onsubmit="fazerLogin(event)">
+            <form id="formLogin" onsubmit="submeterAuth(event)">
                 <div class="cr-modal-body">
                     <div class="cr-form-group">
-                        <label for="username">Usuário Administrador</label>
+                        <label for="username">Nome de Usuário</label>
                         <input type="text" id="username" class="cr-form-control" required placeholder="Digite o usuário...">
                     </div>
                     <div class="cr-form-group">
                         <label for="password">Senha de Acesso</label>
                         <input type="password" id="password" class="cr-form-control" required placeholder="Digite a senha...">
                     </div>
+                    
+                    <!-- Novo link para alternar entre Login e Cadastro -->
+                    <p id="textoAlternarAuth" style="font-size: 0.85rem; color: var(--cr-text-secondary); text-align: center; margin-top: 10px;">
+                        Não tem uma conta? <a href="#" onclick="alternarModoAuth()" style="color: var(--cr-orange); text-decoration: none; font-weight: bold;">Cadastre-se</a>
+                    </p>
+
                     <div class="cr-modal-footer">
                         <button type="button" class="btn-modal-cancel" onclick="fecharModalLogin()">Cancelar</button>
                         <button type="submit" id="btnLogin" class="btn-modal-submit">Entrar</button>
@@ -321,6 +328,25 @@
             }
         }
 
+        let modoLogin = true;
+
+        function alternarModoAuth() {
+            modoLogin = !modoLogin;
+            const titulo = document.getElementById('tituloModalAuth');
+            const btnSubmit = document.getElementById('btnLogin');
+            const textoAlternar = document.getElementById('textoAlternarAuth');
+
+            if (modoLogin) {
+                titulo.innerText = 'Acesso Restrito';
+                btnSubmit.innerText = 'Entrar';
+                textoAlternar.innerHTML = 'Não tem uma conta? <a href="#" onclick="alternarModoAuth()" style="color: var(--cr-orange); text-decoration: none; font-weight: bold;">Cadastre-se</a>';
+            } else {
+                titulo.innerText = 'Criar Nova Conta';
+                btnSubmit.innerText = 'Cadastrar';
+                textoAlternar.innerHTML = 'Já tem uma conta? <a href="#" onclick="alternarModoAuth()" style="color: var(--cr-orange); text-decoration: none; font-weight: bold;">Faça Login</a>';
+            }
+        }
+
         function abrirModalLogin() {
             document.getElementById('modalLogin').classList.add('active');
             document.getElementById('username').focus();
@@ -329,45 +355,60 @@
         function fecharModalLogin() {
             document.getElementById('modalLogin').classList.remove('active');
             document.getElementById('formLogin').reset();
+            if (!modoLogin) alternarModoAuth(); // Reseta a janela para "Login" ao fechar
         }
 
-        async function fazerLogin(e) {
+        async function submeterAuth(e) {
             e.preventDefault();
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
             const btn = document.getElementById('btnLogin');
-            btn.innerText = 'Verificando...';
+            
+            btn.innerText = 'Aguarde...';
             btn.disabled = true;
             
             try {
-                // Link absoluto: Força o pedido a ir DIRETO para o Render
-                const urlDeLogin = 'https://filmes-e-seriesana.onrender.com/login';
-                
-                const resposta = await fetch(urlDeLogin, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: user, password: pass})
-                });
-                
-                // Se o Render não encontrar a rota (Erro 404), damos um aviso claro
-                if(resposta.status === 404) {
-                    throw new Error('A rota do Render ainda não atualizou!');
+                if (modoLogin) {
+                    // --- MODO: FAZER LOGIN ---
+                    const urlDeLogin = 'https://filmes-e-seriesana.onrender.com/login';
+                    const resposta = await fetch(urlDeLogin, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username: user, password: pass})
+                    });
+                    
+                    if(resposta.status === 404) throw new Error('A rota do Render ainda não atualizou!');
+                    
+                    const dados = await resposta.json();
+                    if(!resposta.ok) throw new Error(dados.erro || 'Falha no login');
+                    
+                    tokenJWT = dados.token;
+                    localStorage.setItem('tokenJWT', tokenJWT);
+                    fecharModalLogin();
+                    exibirToast(`Bem-vinda(o) de volta, ${user}!`);
+                    
+                    atualizarInterfaceAuth();
+                    carregarFilmes(); 
+                } else {
+                    // --- MODO: CRIAR CONTA ---
+                    const urlDeRegistro = 'https://filmes-e-seriesana.onrender.com/registrar';
+                    const resposta = await fetch(urlDeRegistro, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username: user, password: pass})
+                    });
+                    
+                    const dados = await resposta.json();
+                    if(!resposta.ok) throw new Error(dados.erro || 'Falha ao cadastrar');
+                    
+                    exibirToast(dados.mensagem); // Mensagem de sucesso do Python
+                    alternarModoAuth(); // Troca a janela de volta para o modo Login
+                    document.getElementById('password').value = ''; // Apaga a senha para a pessoa digitar de novo
                 }
-                
-                const dados = await resposta.json();
-                if(!resposta.ok) throw new Error(dados.erro || 'Falha no login');
-                
-                tokenJWT = dados.token;
-                localStorage.setItem('tokenJWT', tokenJWT);
-                fecharModalLogin();
-                exibirToast('Bem-vinda de volta, Administradora!');
-                
-                atualizarInterfaceAuth();
-                carregarFilmes(); 
             } catch(err) {
                 exibirToast(err.message, true);
             } finally {
-                btn.innerText = 'Entrar';
+                btn.innerText = modoLogin ? 'Entrar' : 'Cadastrar';
                 btn.disabled = false;
             }
         }
