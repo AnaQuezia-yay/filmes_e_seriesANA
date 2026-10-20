@@ -96,6 +96,34 @@ def login():
         
     return jsonify({'erro': 'Usuário ou senha incorretos!'}), 401
 
+# --- ROTA DE CADASTRO DE NOVOS USUÁRIOS ---
+@app.route('/registrar', methods=['POST'])
+def registrar():
+    """Cria uma nova conta de usuário no sistema"""
+    dados = request.json
+    
+    if not dados or not dados.get('username') or not dados.get('password'):
+        return jsonify({'erro': 'Usuário e senha são obrigatórios!'}), 400
+        
+    conn = get_connection()
+    c = conn.cursor()
+    
+    # 1. Verifica se o nome de usuário já existe no banco de dados
+    c.execute('SELECT id FROM usuarios WHERE username = %s', (dados['username'],))
+    if c.fetchone():
+        conn.close()
+        return jsonify({'erro': 'Este nome de usuário já está em uso! Escolha outro.'}), 400
+        
+    # 2. Se o nome estiver livre, criptografa a senha e salva o novo usuário
+    senha_criptografada = generate_password_hash(dados['password'])
+    c.execute('INSERT INTO usuarios (username, password) VALUES (%s, %s)', 
+              (dados['username'], senha_criptografada))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'mensagem': 'Conta criada com sucesso! Agora você pode fazer login.'}), 201
+
 # --- FUNÇÃO DO TMDB ---
 def buscar_dados_tmdb(titulo):
     dados = {"trailer": "", "capa": ""}
@@ -203,31 +231,3 @@ if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0')
 
-# --- ROTA DE CADASTRO DE USUÁRIO ---
-@app.route('/registrar', methods=['POST'])
-def registrar():
-    """Cria uma nova conta de usuário no banco de dados"""
-    dados = request.json
-    username = dados.get('username')
-    password = dados.get('password')
-    
-    if not username or not password:
-        return jsonify({'erro': 'Usuário e senha são obrigatórios!'}), 400
-        
-    conn = get_connection()
-    c = conn.cursor()
-    
-    # 1. Verifica se o nome de usuário já está sendo usado
-    c.execute('SELECT * FROM usuarios WHERE username = %s', (username,))
-    if c.fetchone():
-        conn.close()
-        return jsonify({'erro': 'Este nome de usuário já está em uso. Escolha outro!'}), 400
-        
-    # 2. Se estiver livre, criptografa a senha e salva o novo usuário
-    senha_criptografada = generate_password_hash(password)
-    c.execute('INSERT INTO usuarios (username, password) VALUES (%s, %s)', (username, senha_criptografada))
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({'mensagem': 'Conta criada com sucesso! Você já pode fazer login.'}), 201
