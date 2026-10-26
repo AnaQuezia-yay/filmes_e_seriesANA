@@ -16,8 +16,9 @@ swagger = Swagger(app)
 # --- CONFIGURAÇÕES DE SEGURANÇA ---
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'minha_chave_super_secreta_tsukiglow')
 
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_MxjDJ95ZnihB@ep-gentle-bonus-axgnde7b-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
-TMDB_API_KEY = '7316bff7a87ceb19bc03059e79ce0f6d'
+# Removemos o link do Neon daqui e deixamos só o os.environ.get!
+DATABASE_URL = os.environ.get('DATABASE_URL')
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY', '7316bff7a87ceb19bc03059e79ce0f6d')
 
 def get_connection():
     return psycopg2.connect(DATABASE_URL)
